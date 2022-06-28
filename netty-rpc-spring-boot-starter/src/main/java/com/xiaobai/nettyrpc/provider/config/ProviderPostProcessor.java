@@ -1,10 +1,12 @@
 package com.xiaobai.nettyrpc.provider.config;
 
+import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.provider.annotations.Service;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
@@ -20,6 +22,8 @@ public class ProviderPostProcessor implements BeanPostProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(ProviderPostProcessor.class);
 
+    @Autowired
+    private NettyRpcProperties nettyRpcProperties;
     @Value("${spring.application.name}")
     private String applicationName;
 
@@ -42,8 +46,8 @@ public class ProviderPostProcessor implements BeanPostProcessor {
                 for(Class<?> interfaceClazz : interfaces) {
                     ProviderService providerService = new ProviderService();
                     providerService.setImplName(clazz.getName());
-                    String providerName = StringUtils.isBlank(((Service) annotation).providerName()) ? applicationName
-                            : ((Service) annotation).providerName();
+                    String providerName = StringUtils.isBlank(nettyRpcProperties.getName()) ? applicationName
+                            : nettyRpcProperties.getName();
                     providerService.setProviderName(providerName);
                     ProviderServiceCache.add(interfaceClazz.getName(), providerService);
                 }

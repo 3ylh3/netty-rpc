@@ -18,4 +18,9 @@ public class CommonConstants {
     public static final Integer DEFAULT_PORT = 18317;
     public static final Integer DEFAULT_TIMEOUT = 60;
     public static final String HEART_BEAT = "heart beat";
+    public static final Integer DEFAULT_PROVIDER_CORE_POOL_SIZE = 200;
+    public static final Integer DEFAULT_PROVIDER_MAX_POOL_SIZE = 500;
+    public static final Integer DEFAULT_PROVIDER_QUEUE_CAPACITY = 500;
+    public static final Integer DEFAULT_PROVIDER_KEEP_ALIVE_SECONDS = 10;
+    public static final String PROVIDER_PROCESS_THREAD_NAME_PREFIX = "provider-process";
 }

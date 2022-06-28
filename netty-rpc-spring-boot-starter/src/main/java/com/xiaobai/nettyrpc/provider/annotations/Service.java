@@ -11,7 +11,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Component
 public @interface Service {
-    String providerName() default "";
     String group() default "";
     double weight() default 1d;
 }

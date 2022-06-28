@@ -33,6 +33,8 @@ public class NettyServer implements ApplicationRunner {
 
     @Autowired
     private NettyRpcProperties nettyRpcProperties;
+    @Autowired
+    private NettyServerHandler nettyServerHandler;
 
     /**
      * 初始化netty server
@@ -64,7 +66,7 @@ public class NettyServer implements ApplicationRunner {
                                 decoder = new HessianDecoder();
                             }
                             socketChannel.pipeline().addLast(decoder);
-                            socketChannel.pipeline().addLast(new NettyServerHandler());
+                            socketChannel.pipeline().addLast(nettyServerHandler);
                             AbstractEncoder encoder = SPIUtil.getObject(nettyRpcProperties.getEncodeClassName(),
                                     AbstractEncoder.class);
                             if (null == encoder) {

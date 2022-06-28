@@ -32,4 +32,21 @@ public class NettyRpcProperties {
      * 提供者端口
      */
     private Integer providerPort;
+    /**
+     * 提供者处理线程池核心线程数
+     */
+    private Integer providerCorePoolSize;
+    /**
+     * 提供者处理线程池最大线程数
+     */
+    private Integer providerMaxPoolSize;
+    /**
+     * 提供者处理线程池队列长度
+     */
+    private Integer providerQueueCapacity;
+    /**
+     * 提供者处理线程池空闲线程存活时间
+     */
+    private Integer providerKeepAliveSeconds;
+
 }
