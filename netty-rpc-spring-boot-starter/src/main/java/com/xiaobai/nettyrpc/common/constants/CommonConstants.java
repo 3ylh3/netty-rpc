@@ -17,4 +17,5 @@ public class CommonConstants {
     public static final String LINE_DELIMITER = "\r\n";
     public static final Integer DEFAULT_PORT = 18317;
     public static final Integer DEFAULT_TIMEOUT = 60;
+    public static final String HEART_BEAT = "heart beat";
 }

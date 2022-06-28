@@ -122,6 +122,11 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 requestDTO.setMethodName(method.getName());
                 requestDTO.setParameterTypes(method.getParameterTypes());
                 requestDTO.setParams(objects);
+
+
+                // TODO 使用SPI机制加载配置文件中指定的处理链做前置处理
+
+
                 // 发送请求
                 TransferDTO responseDTO = nettyClient.send(requestDTO);
                 if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
@@ -131,6 +136,11 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                     logger.error("call remote service timeout");
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 }
+
+
+                // TODO 使用SPI机制加载配置文件中指定的处理链做前置处理
+
+
                 logger.info("call remote service success,provider name:{}, remote service address:{}",
                         responseDTO.getProviderName(), responseDTO.getRemoteAddress());
                 return responseDTO.getResult();

@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.xiaobai.nettyrpc</groupId>
+    <groupId>com.xiaobai.netty-rpc</groupId>
     <artifactId>codec</artifactId>
 
     <packaging>jar</packaging>

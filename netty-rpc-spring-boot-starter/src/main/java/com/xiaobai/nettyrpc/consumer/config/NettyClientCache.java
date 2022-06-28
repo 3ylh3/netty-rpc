@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -35,7 +36,7 @@ public class NettyClientCache {
     /**
      * 缓存bean名称|远程调用接口全限定类名对应远程服务服务端信息
      */
-    private static final Map<String, List<RemoteService>> CLASSNAME_ADDRESS_MAP = new ConcurrentHashMap<>(8);
+    private static final Map<String, List<RemoteService>> INTERFACE_ADDRESS_MAP = new ConcurrentHashMap<>(8);
     /**
      * 缓存远程服务端地址对应netty客户端
      */
@@ -49,7 +50,7 @@ public class NettyClientCache {
     public static void add(String key, List<RemoteService> list,
                     NettyRpcProperties nettyRpcProperties) throws Exception {
         logger.info("start add netty client cache...");
-        CLASSNAME_ADDRESS_MAP.put(key, list);
+        INTERFACE_ADDRESS_MAP.put(key, list);
         Integer timeout = null == nettyRpcProperties.getTimeout() ? CommonConstants.DEFAULT_TIMEOUT
                 : nettyRpcProperties.getTimeout();
         // 初始化client
@@ -64,11 +65,11 @@ public class NettyClientCache {
      * @return client
      */
     public static NettyClient getClient(String key) {
-        if (CLASSNAME_ADDRESS_MAP.containsKey(key)) {
+        if (INTERFACE_ADDRESS_MAP.containsKey(key)) {
 
 
             // TODO 根据负载均衡策略选取一个远程服务
-            List<RemoteService> list = CLASSNAME_ADDRESS_MAP.get(key);
+            List<RemoteService> list = INTERFACE_ADDRESS_MAP.get(key);
             RemoteService remoteService = list.get(0);
 
 
@@ -85,6 +86,23 @@ public class NettyClientCache {
             logger.error("no client find,key:{}", key);
             return null;
         }
+    }
+
+    /**
+     * 获取远程调用接口全限定名对应远程服务地址缓存的entry set
+     * @return entry set
+     */
+    public static Set<Map.Entry<String, List<RemoteService>>> getInterfaceSet() {
+        return INTERFACE_ADDRESS_MAP.entrySet();
+    }
+
+    /**
+     * 根据ip端口获取netty客户端
+     * @param address ip端口
+     * @return netty客户端
+     */
+    public static NettyClient getClientByAddress(String address) {
+        return NETTY_CLIENT_MAP.get(address);
     }
 
     /**

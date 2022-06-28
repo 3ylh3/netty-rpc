@@ -31,7 +31,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.xiaobai.nettyrpc</groupId>
+            <groupId>com.xiaobai.netty-rpc</groupId>
             <artifactId>codec</artifactId>
             <version>${project.version}</version>
         </dependency>
