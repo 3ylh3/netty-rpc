@@ -11,6 +11,14 @@ import lombok.Data;
 @Data
 public class RemoteService {
     /**
+     * 提供者名称
+     */
+    private String providerName;
+    /**
+     * 服务组
+     */
+    private String group;
+    /**
      * ip地址
      */
     private String ip;

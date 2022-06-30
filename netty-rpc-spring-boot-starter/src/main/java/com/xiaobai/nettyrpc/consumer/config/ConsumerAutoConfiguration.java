@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
@@ -19,7 +20,17 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class ConsumerAutoConfiguration {
 
+    @Bean("registryCache")
+    @DependsOn({"namingService"})
+    @ConditionalOnMissingBean(RegistryCache.class)
+    public RegistryCache initRegistryCache() {
+        RegistryCache registryCache = new RegistryCache();
+        registryCache.init();
+        return registryCache;
+    }
+
     @Bean
+    @DependsOn({"registryCache"})
     @ConditionalOnMissingBean(ConsumerPostProcessor.class)
     public ConsumerPostProcessor initConsumerPostProcessor() throws Exception {
         return new ConsumerPostProcessor();

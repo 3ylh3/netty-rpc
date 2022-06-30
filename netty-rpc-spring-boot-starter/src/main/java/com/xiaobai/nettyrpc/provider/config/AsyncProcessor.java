@@ -33,13 +33,17 @@ public class AsyncProcessor {
                 // 反射获取调用接口的实现类
                 String interfaceName = requestDTO.getInterfaceName();
                 String methodName = requestDTO.getMethodName();
+                String group = StringUtils.isBlank(requestDTO.getServiceGroup()) ? CommonConstants.DEFAULT
+                        : requestDTO.getServiceGroup();
                 Class<?>[] parameterTypes = requestDTO.getParameterTypes();
                 Object[] params = requestDTO.getParams();
                 logger.info("accept remote call,consumer name:{},interface:{},method:{},request id:{}",
                         requestDTO.getConsumerName(), interfaceName, methodName, requestDTO.getRequestId());
-                ProviderService providerService = ProviderServiceCache.get(interfaceName);
+                String key = interfaceName + CommonConstants.CACHE_KEY_DELIMITER + group;
+                // 缓存中获取对应的实现类信息
+                ProviderService providerService = ProviderServiceCache.get(key);
                 if (null == providerService) {
-                    throw new RemoteCallException("no impl fine,interface:" + interfaceName);
+                    throw new RemoteCallException("no impl find,interface:" + interfaceName);
                 }
                 Class<?> clazz = Class.forName(providerService.getImplName());
                 Method method = clazz.getDeclaredMethod(methodName, parameterTypes);

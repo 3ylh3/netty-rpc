@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2022-06-21 11:06:51
  */
 public class ResponseCache {
-    private static final Map<String, TransferDTO> CACHE = new ConcurrentHashMap<>(8);
+    private static final Map<String, TransferDTO> CACHE = new ConcurrentHashMap<>();
 
     public static void put(String requestId, TransferDTO response) {
         CACHE.put(requestId, response);

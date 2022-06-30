@@ -15,6 +15,10 @@ public class ProviderService {
      */
     private String providerName;
     /**
+     * 接口全限定名
+     */
+    private String interfaceName;
+    /**
      * 组
      */
     private String group;

@@ -23,4 +23,12 @@ public class CommonConstants {
     public static final Integer DEFAULT_PROVIDER_QUEUE_CAPACITY = 500;
     public static final Integer DEFAULT_PROVIDER_KEEP_ALIVE_SECONDS = 10;
     public static final String PROVIDER_PROCESS_THREAD_NAME_PREFIX = "provider-process";
+    public static final String SERVER_ADDR = "serverAddr";
+    public static final String NAMESPACE = "namespace";
+    public static final String DEFAULT = "default";
+    public static final String INTERFACE = "interface";
+    public static final String GROUP = "group";
+    public static final String IMPL = "impl";
+    public static final String SERVICES = "services";
+    public static final String LOCALHOST = "127.0.0.1";
 }

@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Component
 public @interface Service {
-    String group() default "";
+    String group() default "default";
     double weight() default 1d;
 }

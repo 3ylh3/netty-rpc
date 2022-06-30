@@ -1,3 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.xiaobai.nettyrpc.common.config.CommonAutoConfiguration,\
   com.xiaobai.nettyrpc.provider.config.ProviderAutoConfiguration,\
   com.xiaobai.nettyrpc.consumer.config.ConsumerAutoConfiguration

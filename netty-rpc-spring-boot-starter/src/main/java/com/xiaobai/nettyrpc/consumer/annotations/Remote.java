@@ -11,11 +11,11 @@ public @interface Remote {
     /**
      * 提供者名称
      */
-    String providerName() default "";
+    String providerName() default "default";
     /**
      * 提供者组
      */
-    String group() default "";
+    String group() default "default";
     /**
      * 提供者地址
      */

@@ -13,9 +13,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("netty-rpc")
 public class NettyRpcProperties {
     /**
-     * 注册至注册中心的服务名
+     * 注册至注册中心的分组名
      */
     private String name;
+    /**
+     * nacos地址
+     */
+    private String nacosAddress;
+    /**
+     * 命名空间，用于区分环境，默认public命名空间
+     */
+    private String namespaceId;
     /**
      * 超时时间，单位秒
      */

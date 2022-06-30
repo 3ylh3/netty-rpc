@@ -35,8 +35,9 @@ public class ProviderAutoConfiguration implements AsyncConfigurer {
     }
 
     @Bean
+    @DependsOn({"namingService"})
     @ConditionalOnMissingBean(NettyServer.class)
-    public NettyServer initNettyServer() throws Exception {
+    public NettyServer initNettyServer() {
         return new NettyServer();
     }
 

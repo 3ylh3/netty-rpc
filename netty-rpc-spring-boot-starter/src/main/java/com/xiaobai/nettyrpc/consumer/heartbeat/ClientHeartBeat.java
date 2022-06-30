@@ -29,7 +29,7 @@ import java.util.UUID;
 public class ClientHeartBeat {
     private static final Logger logger = LoggerFactory.getLogger(ClientHeartBeat.class);
     // 缓存心跳失败次数
-    private final Map<String, Integer> map = new HashMap<>(8);
+    private final Map<String, Integer> map = new HashMap<>();
 
     @Value("${spring.application.name}")
     private String applicationName;

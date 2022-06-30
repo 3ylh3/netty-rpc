@@ -55,29 +55,36 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
             for(Field field : fields) {
                 //如果有@Remote注解修饰的变量，则解析注解，获得远程服务端地址
                 Remote remote = field.getAnnotation(Remote.class);
-                String className = field.getType().getName();
+                String interfaceName = field.getType().getName();
                 if (null != remote) {
-                    logger.info("start init bean:{},remote call interface:{}...", beanName, className);
+                    logger.info("start init bean:{},remote call interface:{}...", beanName, interfaceName);
                     String providerName = remote.providerName();
+                    String group = remote.group();
                     List<String> providerAddresses = Arrays.asList(remote.providerAddresses());
-                    if (providerAddresses.isEmpty()) {
-                        // TODO 注解中未指定服务端地址，从注册中心中查询
-                    }
                     List<RemoteService> remoteServices = new ArrayList<>();
-                    for (String providerAddress : providerAddresses) {
-                        String serviceIp = providerAddress.split(CommonConstants.ADDRESS_DELIMITER)[0];
-                        Integer servicePort = Integer.parseInt(
-                                providerAddress.split(CommonConstants.ADDRESS_DELIMITER)[1]);
-                        RemoteService remoteService = new RemoteService();
-                        remoteService.setIp(serviceIp);
-                        remoteService.setPort(servicePort);
-                        remoteServices.add(remoteService);
+                    String key = null;
+                    if (providerAddresses.isEmpty()) {
+                        key = interfaceName;
+                        // TODO 注解中未指定服务端地址，从注册中心缓存中查询
+                    } else {
+                        // 缓存key添加bean name和注册中心的服务做区分
+                        key = beanName + CommonConstants.CACHE_KEY_DELIMITER + interfaceName;
+                        for (String providerAddress : providerAddresses) {
+                            String serviceIp = providerAddress.split(CommonConstants.ADDRESS_DELIMITER)[0];
+                            Integer servicePort = Integer.parseInt(
+                                    providerAddress.split(CommonConstants.ADDRESS_DELIMITER)[1]);
+                            RemoteService remoteService = new RemoteService();
+                            remoteService.setProviderName(remote.providerName());
+                            remoteService.setGroup(remote.group());
+                            remoteService.setIp(serviceIp);
+                            remoteService.setPort(servicePort);
+                            remoteServices.add(remoteService);
+                        }
                     }
                     // 初始化netty客户端并缓存
-                    String key = beanName + CommonConstants.CACHE_KEY_DELIMITER + className;
                     NettyClientCache.add(key, remoteServices, nettyRpcProperties);
                     // 动态代理生成远程调用对象
-                    generateObject(bean, enhancer, field, remote, key);
+                    generateObject(bean, enhancer, field, remote, key, providerName, group);
                     logger.info("init success");
                 }
             }
@@ -95,10 +102,13 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
      * @param enhancer enhancer
      * @param field 远程调用接口
      * @param remote remote注解
-     * @param key netty client缓存key
+     * @param key 缓存key
+     * @param providerName 提供者名
+     * @param group 服务组名
      * @throws Exception 异常
      */
-    private void generateObject(Object bean, Enhancer enhancer, Field field, Remote remote, String key) throws Exception {
+    private void generateObject(Object bean, Enhancer enhancer, Field field, Remote remote, String key,
+                                String providerName, String group) throws Exception {
         enhancer.setSuperclass(field.getType());
         enhancer.setCallback(new MethodInterceptor() {
             @Override
@@ -108,7 +118,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 logger.info("start call remote service:{},request id:{}", field.getType().getName()
                         + CommonConstants.ADDRESS_DELIMITER + method.getName(), requestId);
                 // 从netty client缓存中获取client
-                NettyClient nettyClient = NettyClientCache.getClient(key);
+                NettyClient nettyClient = NettyClientCache.getClient(key, providerName, group);
                 if (null == nettyClient) {
                     throw new RemoteCallException("no provider find");
                 }
@@ -122,6 +132,8 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 requestDTO.setMethodName(method.getName());
                 requestDTO.setParameterTypes(method.getParameterTypes());
                 requestDTO.setParams(objects);
+                requestDTO.setProviderName(remote.providerName());
+                requestDTO.setServiceGroup(remote.group());
 
 
                 // TODO 使用SPI机制加载配置文件中指定的处理链做前置处理

@@ -1,7 +1,9 @@
 package com.xiaobai.nettyrpc.provider.config;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.xiaobai.nettyrpc.common.constants.CommonConstants;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,38 +14,25 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2022-06-24 15:06:40
  */
 public class ProviderServiceCache {
-    private static final Map<String, List<ProviderService>> CACHE = new ConcurrentHashMap<>(8);
+    private static final Map<String, ProviderService> CACHE = new ConcurrentHashMap<>();
 
     /**
      * 添加缓存
-     * @param interfaceName 接口全限定类名
+     * @param key 接口全限定类名:group
      * @param providerService 实现类信息
      */
-    public static void add(String interfaceName, ProviderService providerService) {
-        synchronized (CACHE) {
-            List<ProviderService> list = null;
-            if (CACHE.containsKey(interfaceName)) {
-                list = CACHE.get(interfaceName);
-            } else {
-                list = new ArrayList<>();
-            }
-            list.add(providerService);
-            CACHE.put(interfaceName, list);
-        }
+    public static void add(String key, ProviderService providerService) {
+        CACHE.put(key, providerService);
     }
 
     /**
      * 获取提供者service信息
-     * @param interfaceName 接口名
+     * @param key 接口全限定类名:group
      * @return 实现类名
      */
-    public static ProviderService get(String interfaceName) {
-        if (CACHE.containsKey(interfaceName)) {
-            // TODO 根据group获取实现类名称
-            List<ProviderService> list = CACHE.get(interfaceName);
-            return list.get(0);
-
-
+    public static ProviderService get(String key) {
+        if (CACHE.containsKey(key)) {
+            return CACHE.get(key);
         } else {
             return null;
         }
@@ -55,5 +44,22 @@ public class ProviderServiceCache {
      */
     public static boolean isEmpty() {
         return CACHE.isEmpty();
+    }
+
+    /**
+     * 获取所有service
+     * @return service列表
+     */
+    public static JSONArray getServices() {
+        JSONArray services = new JSONArray();
+        for (Map.Entry<String, ProviderService> entry : CACHE.entrySet()) {
+            ProviderService providerService = entry.getValue();
+            JSONObject service = new JSONObject();
+            service.put(CommonConstants.INTERFACE, providerService.getInterfaceName());
+            service.put(CommonConstants.GROUP, providerService.getGroup());
+            service.put(CommonConstants.IMPL, providerService.getImplName());
+            services.add(service);
+        }
+        return services;
     }
 }
