@@ -38,6 +38,8 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
     private String applicationName;
     @Autowired
     private NettyRpcProperties nettyRpcProperties;
+    @Autowired
+    private RegistryCache registryCache;
 
     /**
      * 解析@Remote注解，获取接口全限定类名并从注册中心获取远程server端地址，建立netty长连接并缓存，使用cglib动态代理生成调用对象
@@ -65,7 +67,12 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                     String key = null;
                     if (providerAddresses.isEmpty()) {
                         key = interfaceName;
-                        // TODO 注解中未指定服务端地址，从注册中心缓存中查询
+                        // 注解中未指定服务端地址，从注册中心缓存中查询
+                        remoteServices = registryCache.getServices(interfaceName, providerName, group);
+                        if (null == remoteServices || remoteServices.isEmpty()) {
+                            logger.error("not find remote service in registry center");
+                            throw new BeanCreationException("not find remote service in registry center");
+                        }
                     } else {
                         // 缓存key添加bean name和注册中心的服务做区分
                         key = beanName + CommonConstants.CACHE_KEY_DELIMITER + interfaceName;

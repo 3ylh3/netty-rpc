@@ -6,6 +6,7 @@ import com.xiaobai.nettyrpc.codec.HessianDecoder;
 import com.xiaobai.nettyrpc.codec.HessianEncoder;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
+import com.xiaobai.nettyrpc.common.utils.RemoteServiceUtil;
 import com.xiaobai.nettyrpc.common.utils.SPIUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -75,23 +76,9 @@ public class NettyClientCache {
      */
     public static NettyClient getClient(String key, String providerName, String group) {
         if (INTERFACE_ADDRESS_MAP.containsKey(key)) {
-
-
-
             List<RemoteService> list = INTERFACE_ADDRESS_MAP.get(key);
-            List<RemoteService> services = new ArrayList<>();
             // 根据providerName和group筛选
-            for (RemoteService remoteService : list) {
-                if (!StringUtils.equals(CommonConstants.DEFAULT, providerName)
-                        && !StringUtils.equals(providerName, remoteService.getProviderName())) {
-                    continue;
-                }
-                if (!StringUtils.equals(CommonConstants.DEFAULT, group)
-                        && !StringUtils.equals(group, remoteService.getGroup())) {
-                    continue;
-                }
-                services.add(remoteService);
-            }
+            List<RemoteService> services = RemoteServiceUtil.selectRemoteService(list, providerName, group);
 
 
             // TODO 根据负载均衡策略选取一个远程服务
