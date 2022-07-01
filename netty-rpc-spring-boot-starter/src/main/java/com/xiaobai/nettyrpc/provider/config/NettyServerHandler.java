@@ -1,5 +1,6 @@
 package com.xiaobai.nettyrpc.provider.config;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author yinzhaojing
  * @date 2022-06-20 19:49:06
  */
+@ChannelHandler.Sharable
 public class NettyServerHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServerHandler.class);
