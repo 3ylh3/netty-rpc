@@ -84,6 +84,10 @@ public class NettyClientCache {
             List<RemoteService> list = INTERFACE_ADDRESS_MAP.get(key);
             // 根据providerName和group筛选
             List<RemoteService> services = RemoteServiceUtil.selectRemoteService(list, providerName, group);
+            if (services.isEmpty()) {
+                logger.error("no remote service find");
+                return null;
+            }
 
 
             // TODO 根据负载均衡策略选取一个远程服务
