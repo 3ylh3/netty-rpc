@@ -207,22 +207,20 @@ public class NettyClientCache {
                     continue;
                 }
                 List<RemoteService> remoteServices = entry.getValue();
-                Set<String> groupSet = new HashSet<>();
                 Set<String> addressSet = new HashSet<>();
-                // 记录原有group和地址
+                // 记录原有地址
                 for (RemoteService remoteService : remoteServices) {
                     if (!StringUtils.equals(providerName, remoteService.getProviderName())) {
                         continue;
                     }
                     String address = remoteService.getIp() + CommonConstants.ADDRESS_DELIMITER
                             + remoteService.getPort();
-                    groupSet.add(remoteService.getGroup());
                     addressSet.add(address);
                     if (!set.contains(address)) {
                         deleteSet.add(address);
                     }
                 }
-                List<RemoteService> newRemoteServices = getNewRemoteServices(key, providerName, groupSet, addressSet, list);
+                List<RemoteService> newRemoteServices = getNewRemoteServices(key, providerName, addressSet, list);
                 // 更新缓存
                 INTERFACE_ADDRESS_MAP.put(key, newRemoteServices);
                 Integer timeout = null == nettyRpcProperties.getTimeout() ? CommonConstants.DEFAULT_TIMEOUT
@@ -243,34 +241,29 @@ public class NettyClientCache {
      * 获取新的远程服务列表
      * @param interfaceName 接口名
      * @param providerName 提供者名
-     * @param groupSet 服务组列表
      * @param addressSet 原地址列表
      * @param list 新实例列表
      * @return
      */
     private static List<RemoteService> getNewRemoteServices(String interfaceName, String providerName,
-                                                            Set<String> groupSet, Set<String> addressSet,
-                                                            List<Instance> list) {
+                                                            Set<String> addressSet, List<Instance> list) {
         List<RemoteService> remoteServices = new ArrayList<>();
-        for (String group : groupSet) {
-            for (Instance instance : list) {
-                Map<String, String> metadata = instance.getMetadata();
-                JSONArray array = JSON.parseArray(metadata.get(CommonConstants.SERVICES));
-                // 解析元数据
-                for (int i = 0;i < array.size();i++) {
-                    JSONObject object = array.getJSONObject(i);
-                    if (StringUtils.equals(interfaceName, object.getString(CommonConstants.INTERFACE))
-                            && StringUtils.equals(group, object.getString(CommonConstants.GROUP))
-                            &&  !addressSet.contains(instance.getIp() + CommonConstants.ADDRESS_DELIMITER
-                            + instance.getPort())) {
-                        // 匹配接口名和组，并且ip端口原来未缓存
-                        RemoteService remoteService = new RemoteService();
-                        remoteService.setProviderName(providerName);
-                        remoteService.setIp(instance.getIp());
-                        remoteService.setPort(instance.getPort());
-                        remoteService.setGroup(group);
-                        remoteServices.add(remoteService);
-                    }
+        for (Instance instance : list) {
+            Map<String, String> metadata = instance.getMetadata();
+            JSONArray array = JSON.parseArray(metadata.get(CommonConstants.SERVICES));
+            // 解析元数据
+            for (int i = 0;i < array.size();i++) {
+                JSONObject object = array.getJSONObject(i);
+                if (StringUtils.equals(interfaceName, object.getString(CommonConstants.INTERFACE))
+                        && !addressSet.contains(instance.getIp() + CommonConstants.ADDRESS_DELIMITER
+                        + instance.getPort())) {
+                    // 匹配接口名，并且ip端口原来未缓存
+                    RemoteService remoteService = new RemoteService();
+                    remoteService.setProviderName(providerName);
+                    remoteService.setIp(instance.getIp());
+                    remoteService.setPort(instance.getPort());
+                    remoteService.setGroup(object.getString(CommonConstants.GROUP));
+                    remoteServices.add(remoteService);
                 }
             }
         }

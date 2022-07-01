@@ -3,7 +3,10 @@ package com.xiaobai.nettyrpc.provider.config;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,25 +17,42 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2022-06-24 15:06:40
  */
 public class ProviderServiceCache {
-    private static final Map<String, ProviderService> CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, List<ProviderService>> CACHE = new ConcurrentHashMap<>();
 
     /**
      * 添加缓存
-     * @param key 接口全限定类名:group
+     * @param key 接口全限定类名
      * @param providerService 实现类信息
      */
     public static void add(String key, ProviderService providerService) {
-        CACHE.put(key, providerService);
+        synchronized (CACHE) {
+            List<ProviderService> list = null;
+            if (CACHE.containsKey(key)) {
+                list = CACHE.get(key);
+            } else {
+                list = new ArrayList<>();
+            }
+            list.add(providerService);
+            CACHE.put(key, list);
+        }
     }
 
     /**
      * 获取提供者service信息
-     * @param key 接口全限定类名:group
+     * @param key 接口全限定类名
+     * @param group 组
      * @return 实现类名
      */
-    public static ProviderService get(String key) {
+    public static ProviderService get(String key, String group) {
         if (CACHE.containsKey(key)) {
-            return CACHE.get(key);
+            List<ProviderService> list = CACHE.get(key);
+            for (ProviderService providerService : list) {
+                if (StringUtils.equals(CommonConstants.DEFAULT, group)
+                        || StringUtils.equals(group, providerService.getGroup())) {
+                    return providerService;
+                }
+            }
+            return null;
         } else {
             return null;
         }
@@ -52,13 +72,15 @@ public class ProviderServiceCache {
      */
     public static JSONArray getServices() {
         JSONArray services = new JSONArray();
-        for (Map.Entry<String, ProviderService> entry : CACHE.entrySet()) {
-            ProviderService providerService = entry.getValue();
-            JSONObject service = new JSONObject();
-            service.put(CommonConstants.INTERFACE, providerService.getInterfaceName());
-            service.put(CommonConstants.GROUP, providerService.getGroup());
-            service.put(CommonConstants.IMPL, providerService.getImplName());
-            services.add(service);
+        for (Map.Entry<String, List<ProviderService>> entry : CACHE.entrySet()) {
+            List<ProviderService> providerServices = entry.getValue();
+            for (ProviderService providerService : providerServices) {
+                JSONObject service = new JSONObject();
+                service.put(CommonConstants.INTERFACE, providerService.getInterfaceName());
+                service.put(CommonConstants.GROUP, providerService.getGroup());
+                service.put(CommonConstants.IMPL, providerService.getImplName());
+                services.add(service);
+            }
         }
         return services;
     }

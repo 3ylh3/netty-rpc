@@ -39,9 +39,8 @@ public class AsyncProcessor {
                 Object[] params = requestDTO.getParams();
                 logger.info("accept remote call,consumer name:{},interface:{},method:{},request id:{}",
                         requestDTO.getConsumerName(), interfaceName, methodName, requestDTO.getRequestId());
-                String key = interfaceName + CommonConstants.CACHE_KEY_DELIMITER + group;
                 // 缓存中获取对应的实现类信息
-                ProviderService providerService = ProviderServiceCache.get(key);
+                ProviderService providerService = ProviderServiceCache.get(interfaceName, group);
                 if (null == providerService) {
                     throw new RemoteCallException("no impl find,interface:" + interfaceName);
                 }

@@ -1,6 +1,5 @@
 package com.xiaobai.nettyrpc.provider.config;
 
-import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.provider.annotations.Service;
 import org.apache.commons.lang3.StringUtils;
@@ -57,8 +56,7 @@ public class ProviderPostProcessor implements BeanPostProcessor {
                         throw new BeanCreationException("provider name is null!");
                     }
                     providerService.setProviderName(providerName);
-                    ProviderServiceCache.add(interfaceClazz.getName() + CommonConstants.CACHE_KEY_DELIMITER
-                            + group, providerService);
+                    ProviderServiceCache.add(interfaceClazz.getName(), providerService);
                 }
             }
         }
