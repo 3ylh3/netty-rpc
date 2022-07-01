@@ -23,12 +23,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class ConsumerAutoConfiguration {
     @Autowired
     private NamingService namingService;
+    @Autowired
+    private NettyRpcProperties nettyRpcProperties;
 
     @Bean("registryCache")
     @DependsOn({"namingService"})
     @ConditionalOnMissingBean(RegistryCache.class)
     public RegistryCache initRegistryCache() throws Exception {
-        RegistryCache registryCache = new RegistryCache(namingService);
+        RegistryCache registryCache = new RegistryCache(namingService, nettyRpcProperties);
         registryCache.init();
         return registryCache;
     }

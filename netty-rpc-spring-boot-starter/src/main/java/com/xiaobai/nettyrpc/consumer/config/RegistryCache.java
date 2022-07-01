@@ -4,9 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.listener.Event;
+import com.alibaba.nacos.api.naming.listener.EventListener;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
+import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.common.utils.RemoteServiceUtil;
 
 import java.util.ArrayList;
@@ -25,9 +29,11 @@ public class RegistryCache {
     private static final Map<String, List<RemoteService>> CACHE = new HashMap<>();
 
     private NamingService namingService;
+    private NettyRpcProperties nettyRpcProperties;
 
-    public RegistryCache(NamingService namingService) {
+    public RegistryCache(NamingService namingService, NettyRpcProperties nettyRpcProperties) {
         this.namingService = namingService;
+        this.nettyRpcProperties = nettyRpcProperties;
     }
 
     /**
@@ -67,6 +73,16 @@ public class RegistryCache {
                     CACHE.put(interfaceName, list);
                 }
             }
+            // 注册监听
+            namingService.subscribe(providerName, new EventListener() {
+                @Override
+                public void onEvent(Event event) {
+                    if (event instanceof NamingEvent) {
+                        List<Instance> list = ((NamingEvent) event).getInstances();
+                        NettyClientCache.updateCache(providerName, list, nettyRpcProperties);
+                    }
+                }
+            });
         }
     }
 

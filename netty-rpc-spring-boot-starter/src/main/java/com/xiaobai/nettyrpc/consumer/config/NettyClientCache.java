@@ -1,5 +1,9 @@
 package com.xiaobai.nettyrpc.consumer.config;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.xiaobai.nettyrpc.codec.AbstractDecoder;
 import com.xiaobai.nettyrpc.codec.AbstractEncoder;
 import com.xiaobai.nettyrpc.codec.HessianDecoder;
@@ -23,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,6 +90,10 @@ public class NettyClientCache {
             RemoteService remoteService = services.get(0);
 
 
+            if (null == remoteService) {
+                logger.error("no remote service find");
+                return null;
+            }
             // 获取对应的netty client
             String clientCacheKey = remoteService.getIp() + CommonConstants.ADDRESS_DELIMITER + remoteService.getPort();
             if (NETTY_CLIENT_MAP.containsKey(clientCacheKey)) {
@@ -170,6 +179,108 @@ public class NettyClientCache {
                 logger.error("init netty client exception:", e);
                 throw e;
             }
+        }
+    }
+
+    /**
+     * 更新缓存
+     * @param providerName 提供者名称
+     * @param list 实例列表
+     * @param nettyRpcProperties 配置类
+     */
+    public static void updateCache(String providerName, List<Instance> list,
+                                   NettyRpcProperties nettyRpcProperties) {
+        Set<String> set = new HashSet<>();
+        for (Instance instance : list) {
+            set.add(instance.getIp() + CommonConstants.ADDRESS_DELIMITER + instance.getPort());
+        }
+        Set<String> deleteSet = new HashSet<>();
+        synchronized (INTERFACE_ADDRESS_MAP) {
+            for (Map.Entry<String, List<RemoteService>> entry : INTERFACE_ADDRESS_MAP.entrySet()) {
+                String key = entry.getKey();
+                if (StringUtils.contains(key, CommonConstants.CACHE_KEY_DELIMITER)) {
+                    // 含有|，表示此client缓存信息是从Remote注解中指定的地址创建的，无需更新
+                    continue;
+                }
+                List<RemoteService> remoteServices = entry.getValue();
+                Set<String> groupSet = new HashSet<>();
+                Set<String> addressSet = new HashSet<>();
+                // 记录原有group和地址
+                for (RemoteService remoteService : remoteServices) {
+                    if (!StringUtils.equals(providerName, remoteService.getProviderName())) {
+                        continue;
+                    }
+                    String address = remoteService.getIp() + CommonConstants.ADDRESS_DELIMITER
+                            + remoteService.getPort();
+                    groupSet.add(remoteService.getGroup());
+                    addressSet.add(address);
+                    if (!set.contains(address)) {
+                        deleteSet.add(address);
+                    }
+                }
+                List<RemoteService> newRemoteServices = getNewRemoteServices(key, providerName, groupSet, addressSet, list);
+                // 更新缓存
+                INTERFACE_ADDRESS_MAP.put(key, newRemoteServices);
+                Integer timeout = null == nettyRpcProperties.getTimeout() ? CommonConstants.DEFAULT_TIMEOUT
+                        : nettyRpcProperties.getTimeout();
+                try {
+                    initNettyClient(newRemoteServices, timeout, nettyRpcProperties.getEncodeClassName(),
+                            nettyRpcProperties.getDecodeClassName());
+                } catch (Exception e) {
+                    logger.error("update cache exception,provider name:{}", providerName, e);
+                }
+            }
+            // 关掉旧的netty客户端
+            shutDownClient(deleteSet);
+        }
+    }
+
+    /**
+     * 获取新的远程服务列表
+     * @param interfaceName 接口名
+     * @param providerName 提供者名
+     * @param groupSet 服务组列表
+     * @param addressSet 原地址列表
+     * @param list 新实例列表
+     * @return
+     */
+    private static List<RemoteService> getNewRemoteServices(String interfaceName, String providerName,
+                                                            Set<String> groupSet, Set<String> addressSet,
+                                                            List<Instance> list) {
+        List<RemoteService> remoteServices = new ArrayList<>();
+        for (String group : groupSet) {
+            for (Instance instance : list) {
+                Map<String, String> metadata = instance.getMetadata();
+                JSONArray array = JSON.parseArray(metadata.get(CommonConstants.SERVICES));
+                // 解析元数据
+                for (int i = 0;i < array.size();i++) {
+                    JSONObject object = array.getJSONObject(i);
+                    if (StringUtils.equals(interfaceName, object.getString(CommonConstants.INTERFACE))
+                            && StringUtils.equals(group, object.getString(CommonConstants.GROUP))
+                            &&  !addressSet.contains(instance.getIp() + CommonConstants.ADDRESS_DELIMITER
+                            + instance.getPort())) {
+                        // 匹配接口名和组，并且ip端口原来未缓存
+                        RemoteService remoteService = new RemoteService();
+                        remoteService.setProviderName(providerName);
+                        remoteService.setIp(instance.getIp());
+                        remoteService.setPort(instance.getPort());
+                        remoteService.setGroup(group);
+                        remoteServices.add(remoteService);
+                    }
+                }
+            }
+        }
+        return remoteServices;
+    }
+
+    /**
+     * 关掉netty客户端
+     * @param set 地址列表
+     */
+    private static void shutDownClient(Set<String> set) {
+        for (String address : set) {
+            NettyClient nettyClient = NETTY_CLIENT_MAP.remove(address);
+            nettyClient.close();
         }
     }
 }

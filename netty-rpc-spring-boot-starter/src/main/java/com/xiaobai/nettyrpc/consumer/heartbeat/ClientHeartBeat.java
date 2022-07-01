@@ -63,7 +63,7 @@ public class ClientHeartBeat {
                 if (null == nettyClient) {
                     logger.error("not find remote server:{}", key);
 
-                    // TODO 触发netty客户端缓存更新
+                    // TODO 触发netty客户端状态更新
 
                     continue;
                 }

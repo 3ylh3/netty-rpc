@@ -50,4 +50,11 @@ public class NettyClient {
             }
         }
     }
+
+    /**
+     * 关闭客户端
+     */
+    public void close() {
+        this.channelFuture.channel().close();
+    }
 }
