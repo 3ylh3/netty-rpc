@@ -1,6 +1,7 @@
 package com.xiaobai.nettyrpc.consumer.config;
 
 import com.xiaobai.nettyrpc.dto.TransferDTO;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
  * @author yinzhaojing
  * @date 2022-06-20 20:05:08
  */
+@ChannelHandler.Sharable
 public class ClientHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
 
