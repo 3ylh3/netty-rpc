@@ -5,6 +5,7 @@ import com.xiaobai.nettyrpc.common.exceptions.RemoteCallException;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.consumer.annotations.Remote;
 import com.xiaobai.nettyrpc.dto.TransferDTO;
+import com.xiaobai.nettyrpc.loadbalancer.entity.RemoteService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,7 +126,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 logger.info("start call remote service:{},request id:{}", field.getType().getName()
                         + CommonConstants.ADDRESS_DELIMITER + method.getName(), requestId);
                 // 从netty client缓存中获取client
-                NettyClient nettyClient = NettyClientCache.getClient(key, providerName, group);
+                NettyClient nettyClient = NettyClientCache.getClient(key, providerName, group, remote.loadbalancer());
                 if (null == nettyClient) {
                     throw new RemoteCallException("no provider find");
                 }

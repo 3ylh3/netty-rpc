@@ -1,7 +1,7 @@
 package com.xiaobai.nettyrpc.common.utils;
 
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
-import com.xiaobai.nettyrpc.consumer.config.RemoteService;
+import com.xiaobai.nettyrpc.loadbalancer.entity.RemoteService;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;

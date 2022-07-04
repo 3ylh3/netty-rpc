@@ -4,7 +4,7 @@ import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.consumer.config.NettyClient;
 import com.xiaobai.nettyrpc.consumer.config.NettyClientCache;
-import com.xiaobai.nettyrpc.consumer.config.RemoteService;
+import com.xiaobai.nettyrpc.loadbalancer.entity.RemoteService;
 import com.xiaobai.nettyrpc.dto.TransferDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

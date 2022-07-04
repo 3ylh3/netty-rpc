@@ -17,6 +17,10 @@ public @interface Remote {
      */
     String group() default "default";
     /**
+     * 负载均衡实现类名
+     */
+    String loadbalancer() default "";
+    /**
      * 提供者地址
      */
     String[] providerAddresses() default {};

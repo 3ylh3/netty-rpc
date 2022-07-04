@@ -12,6 +12,9 @@ import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.common.utils.RemoteServiceUtil;
 import com.xiaobai.nettyrpc.common.utils.SPIUtil;
+import com.xiaobai.nettyrpc.loadbalancer.entity.RemoteService;
+import com.xiaobai.nettyrpc.loadbalancer.service.Loadbalancer;
+import com.xiaobai.nettyrpc.loadbalancer.service.impl.RandomLoadbalancer;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -77,9 +80,10 @@ public class NettyClientCache {
      * @param key 缓存key
      * @param providerName 提供者名称
      * @param group 服务组
+     * @param loadbalancerClass 负载均衡实现类全限定类名
      * @return client
      */
-    public static NettyClient getClient(String key, String providerName, String group) {
+    public static NettyClient getClient(String key, String providerName, String group, String loadbalancerClass) {
         if (INTERFACE_ADDRESS_MAP.containsKey(key)) {
             List<RemoteService> list = INTERFACE_ADDRESS_MAP.get(key);
             // 根据providerName和group筛选
@@ -88,12 +92,13 @@ public class NettyClientCache {
                 logger.error("no remote service find");
                 return null;
             }
-
-
-            // TODO 根据负载均衡策略选取一个远程服务
-            RemoteService remoteService = services.get(0);
-
-
+            // 根据负载均衡策略选取一个远程服务
+            Loadbalancer loadbalancer = SPIUtil.getObject(loadbalancerClass, Loadbalancer.class);
+            if (null == loadbalancer) {
+                // 默认随机
+                loadbalancer = new RandomLoadbalancer();
+            }
+            RemoteService remoteService = loadbalancer.selectRemoteService(services);
             if (null == remoteService) {
                 logger.error("no remote service find");
                 return null;

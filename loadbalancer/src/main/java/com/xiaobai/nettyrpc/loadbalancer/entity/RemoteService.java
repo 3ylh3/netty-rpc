@@ -1,4 +1,4 @@
-package com.xiaobai.nettyrpc.consumer.config;
+package com.xiaobai.nettyrpc.loadbalancer.entity;
 
 import lombok.Data;
 
