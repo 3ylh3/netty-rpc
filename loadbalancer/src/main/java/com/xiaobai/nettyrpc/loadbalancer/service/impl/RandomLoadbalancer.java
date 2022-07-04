@@ -15,11 +15,12 @@ import java.util.Random;
 public class RandomLoadbalancer implements Loadbalancer {
 
     @Override
-    public RemoteService selectRemoteService(List<RemoteService> list) {
+    public RemoteService selectRemoteService(String providerName, String interfaceClass, String group,
+                                             List<RemoteService> list) {
         if (null != list && !list.isEmpty()) {
             Random random = new Random(System.currentTimeMillis());
-            int number = random.nextInt(list.size());
-            return list.get(number);
+            int index = random.nextInt(list.size());
+            return list.get(index);
         } else {
             return null;
         }

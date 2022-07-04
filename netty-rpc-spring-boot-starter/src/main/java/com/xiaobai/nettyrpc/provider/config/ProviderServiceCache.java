@@ -40,7 +40,7 @@ public class ProviderServiceCache {
     /**
      * 获取提供者service信息
      * @param key 接口全限定类名
-     * @param group 组
+     * @param group 接口组
      * @return 实现类名
      */
     public static ProviderService get(String key, String group) {

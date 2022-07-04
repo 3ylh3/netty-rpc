@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("netty-rpc")
 public class NettyRpcProperties {
     /**
-     * 注册至注册中心的分组名
+     * 注册至注册中心的服务名
      */
     private String name;
     /**

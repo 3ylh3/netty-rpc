@@ -15,7 +15,7 @@ public class RemoteService {
      */
     private String providerName;
     /**
-     * 服务组
+     * 接口组
      */
     private String group;
     /**

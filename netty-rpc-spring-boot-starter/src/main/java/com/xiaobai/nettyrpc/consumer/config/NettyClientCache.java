@@ -79,7 +79,7 @@ public class NettyClientCache {
      * 从缓存中获取netty client
      * @param key 缓存key
      * @param providerName 提供者名称
-     * @param group 服务组
+     * @param group 接口组
      * @param loadbalancerClass 负载均衡实现类全限定类名
      * @return client
      */
@@ -98,7 +98,7 @@ public class NettyClientCache {
                 // 默认随机
                 loadbalancer = new RandomLoadbalancer();
             }
-            RemoteService remoteService = loadbalancer.selectRemoteService(services);
+            RemoteService remoteService = loadbalancer.selectRemoteService(providerName, key, group, services);
             if (null == remoteService) {
                 logger.error("no remote service find");
                 return null;
@@ -148,7 +148,7 @@ public class NettyClientCache {
             String key = remoteService.getIp() + CommonConstants.ADDRESS_DELIMITER + remoteService.getPort();
             // 判断缓存中是否已经有对应的channel
             if (NETTY_CLIENT_MAP.containsKey(key)) {
-                return;
+                continue;
             }
             logger.info("start init netty client,remote server ip:{},port:{}...", remoteService.getIp(),
                     remoteService.getPort());
@@ -212,20 +212,18 @@ public class NettyClientCache {
                     continue;
                 }
                 List<RemoteService> remoteServices = entry.getValue();
-                Set<String> addressSet = new HashSet<>();
-                // 记录原有地址
+                // 记录需要删除的client
                 for (RemoteService remoteService : remoteServices) {
                     if (!StringUtils.equals(providerName, remoteService.getProviderName())) {
                         continue;
                     }
                     String address = remoteService.getIp() + CommonConstants.ADDRESS_DELIMITER
                             + remoteService.getPort();
-                    addressSet.add(address);
                     if (!set.contains(address)) {
                         deleteSet.add(address);
                     }
                 }
-                List<RemoteService> newRemoteServices = getNewRemoteServices(key, providerName, addressSet, list);
+                List<RemoteService> newRemoteServices = getNewRemoteServices(key, providerName, list);
                 // 更新缓存
                 INTERFACE_ADDRESS_MAP.put(key, newRemoteServices);
                 Integer timeout = null == nettyRpcProperties.getTimeout() ? CommonConstants.DEFAULT_TIMEOUT
@@ -246,12 +244,11 @@ public class NettyClientCache {
      * 获取新的远程服务列表
      * @param interfaceName 接口名
      * @param providerName 提供者名
-     * @param addressSet 原地址列表
      * @param list 新实例列表
      * @return
      */
     private static List<RemoteService> getNewRemoteServices(String interfaceName, String providerName,
-                                                            Set<String> addressSet, List<Instance> list) {
+                                                            List<Instance> list) {
         List<RemoteService> remoteServices = new ArrayList<>();
         for (Instance instance : list) {
             Map<String, String> metadata = instance.getMetadata();
@@ -259,10 +256,8 @@ public class NettyClientCache {
             // 解析元数据
             for (int i = 0;i < array.size();i++) {
                 JSONObject object = array.getJSONObject(i);
-                if (StringUtils.equals(interfaceName, object.getString(CommonConstants.INTERFACE))
-                        && !addressSet.contains(instance.getIp() + CommonConstants.ADDRESS_DELIMITER
-                        + instance.getPort())) {
-                    // 匹配接口名，并且ip端口原来未缓存
+                if (StringUtils.equals(interfaceName, object.getString(CommonConstants.INTERFACE))) {
+                    // 匹配接口名
                     RemoteService remoteService = new RemoteService();
                     remoteService.setProviderName(providerName);
                     remoteService.setIp(instance.getIp());

@@ -13,7 +13,7 @@ public @interface Remote {
      */
     String providerName() default "default";
     /**
-     * 提供者组
+     * 提供者接口组
      */
     String group() default "default";
     /**

@@ -91,7 +91,7 @@ public class RegistryCache {
      * 获取提供者列表
      * @param interfaceName 远程调用接口名
      * @param providerName 提供者名称
-     * @param group 服务组
+     * @param group 接口组
      * @return 列表
      */
     public List<RemoteService> getServices(String interfaceName, String providerName, String group) {

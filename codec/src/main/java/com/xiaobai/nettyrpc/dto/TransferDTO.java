@@ -54,7 +54,7 @@ public class TransferDTO implements Serializable {
      */
     private String providerName;
     /**
-     * 服务组
+     * 接口组
      */
     private String serviceGroup;
     /**

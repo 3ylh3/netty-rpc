@@ -112,7 +112,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
      * @param remote remote注解
      * @param key 缓存key
      * @param providerName 提供者名
-     * @param group 服务组名
+     * @param group 接口组名
      * @throws Exception 异常
      */
     private void generateObject(Object bean, Enhancer enhancer, Field field, Remote remote, String key,
