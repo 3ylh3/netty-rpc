@@ -1,5 +1,7 @@
 package com.xiaobai.nettyrpc.consumer.heartbeat;
 
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.consumer.config.NettyClient;
@@ -35,6 +37,8 @@ public class ClientHeartBeat {
     private String applicationName;
     @Autowired
     private NettyRpcProperties nettyRpcProperties;
+    @Autowired
+    private NamingService namingService;
 
     /**
      * 每个30秒发送心跳，检测与服务端的长链接是否可用
@@ -62,8 +66,15 @@ public class ClientHeartBeat {
                 NettyClient nettyClient = NettyClientCache.getClientByAddress(key);
                 if (null == nettyClient) {
                     logger.error("not find remote server:{}", key);
-
-                    // TODO 触发netty客户端状态更新
+                    if (!StringUtils.contains(interfaceEntry.getKey(), CommonConstants.CACHE_KEY_DELIMITER)) {
+                        // 非注解中指定的地址，触发缓存更新
+                        try {
+                            List<Instance> list = namingService.selectInstances(remoteService.getProviderName(), true);
+                            NettyClientCache.updateCache(remoteService.getProviderName(), list, nettyRpcProperties);
+                        } catch (Exception e) {
+                            logger.error("get instance from nacos exception:", e);
+                        }
+                    }
 
                     continue;
                 }
@@ -87,14 +98,15 @@ public class ClientHeartBeat {
                             count++;
                         }
                         if (5 <= count) {
-                            // TODO 连续5次心跳失败,触发netty客户端缓存更新
-
-                            logger.info("缓存更新");
-
-
+                            // 连续5次心跳失败,将远程服务状态更新为不可用
+                            remoteService.setIsHealthy(false);
+                            logger.info("remote server {} turn to unhealthy", key);
                             // 失败次数清0
                             count = 0;
                         }
+                    } else if (!remoteService.getIsHealthy()) {
+                        logger.info("remote server {} turn to healthy", key);
+                        remoteService.setIsHealthy(true);
                     }
                     // 记录失败次数
                     map.put(key, count);

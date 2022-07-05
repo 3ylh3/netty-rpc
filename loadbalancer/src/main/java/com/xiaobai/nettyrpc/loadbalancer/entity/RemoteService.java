@@ -26,4 +26,8 @@ public class RemoteService {
      * 端口
      */
     private Integer port;
+    /**
+     * 是否健康
+     */
+    private Boolean isHealthy;
 }

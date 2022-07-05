@@ -46,7 +46,7 @@ public class RemoteServiceUtil {
             }
             String key = remoteService.getProviderName() + remoteService.getGroup() + remoteService.getIp()
                     + remoteService.getPort();
-            if (!set.contains(key)) {
+            if (!set.contains(key) && remoteService.getIsHealthy()) {
                 services.add(remoteService);
                 set.add(key);
             }

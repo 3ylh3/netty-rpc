@@ -70,6 +70,7 @@ public class RegistryCache {
                     remoteService.setIp(ip);
                     remoteService.setPort(port);
                     remoteService.setGroup(group);
+                    remoteService.setIsHealthy(true);
                     list.add(remoteService);
                     CACHE.put(interfaceName, list);
                 }
