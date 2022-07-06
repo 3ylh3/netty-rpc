@@ -1,5 +1,6 @@
 package com.xiaobai.nettyrpc.provider.config;
 
+import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -19,6 +20,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(NettyServerHandler.class);
 
     @Autowired
+    private NettyRpcProperties nettyRpcProperties;
+    @Autowired
     private AsyncProcessor asyncProcessor;
 
 
@@ -26,7 +29,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         // 线程池异步处理
-        asyncProcessor.process(ctx, msg);
+        asyncProcessor.process(ctx, msg, nettyRpcProperties.getProviderPreProcessors(),
+                nettyRpcProperties.getProviderPostProcessors());
     }
 
     @Override
