@@ -3,7 +3,9 @@ package com.xiaobai.nettyrpc.consumer.config;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.exceptions.RemoteCallException;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
+import com.xiaobai.nettyrpc.common.utils.SPIUtil;
 import com.xiaobai.nettyrpc.consumer.annotations.Remote;
+import com.xiaobai.nettyrpc.consumer.processor.ConsumerPreProcessor;
 import com.xiaobai.nettyrpc.dto.TransferDTO;
 import com.xiaobai.nettyrpc.loadbalancer.entity.RemoteService;
 import org.apache.commons.lang3.StringUtils;
@@ -144,11 +146,20 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 requestDTO.setParams(objects);
                 requestDTO.setProviderName(remote.providerName());
                 requestDTO.setServiceGroup(remote.group());
-
-
-                // TODO 使用SPI机制加载配置文件中指定的处理链做前置处理
-
-
+                // 使用SPI机制加载配置文件中指定的处理链做前置处理
+                List<String> preProcessors = nettyRpcProperties.getConsumerPreProcessors();
+                if (null != preProcessors && !preProcessors.isEmpty()) {
+                    List<ConsumerPreProcessor> preProcessorList = SPIUtil.getObjects(preProcessors,
+                            ConsumerPreProcessor.class);
+                    try {
+                        for (ConsumerPreProcessor consumerPreProcessor : preProcessorList) {
+                            consumerPreProcessor.doPreProcess(requestDTO);
+                        }
+                    } catch (Exception e) {
+                        logger.error("do pre processor exception:", e);
+                        throw e;
+                    }
+                }
                 // 发送请求
                 TransferDTO responseDTO = nettyClient.send(requestDTO);
                 if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
@@ -158,11 +169,22 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                     logger.error("call remote service timeout");
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 }
-
-
-                // TODO 使用SPI机制加载配置文件中指定的处理链做前置处理
-
-
+                // 使用SPI机制加载配置文件中指定的处理链做前置处理
+                List<String> postProcessors = nettyRpcProperties.getConsumerPostProcessors();
+                if (null != postProcessors && !postProcessors.isEmpty()) {
+                    List<com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor> postProcessorList =
+                            SPIUtil.getObjects(postProcessors,
+                                    com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor.class);
+                    try {
+                        for (com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor consumerPostProcessor
+                                : postProcessorList) {
+                            consumerPostProcessor.doPostProcess(responseDTO);
+                        }
+                    } catch (Exception e) {
+                        logger.error("do post processor exception:", e);
+                        throw e;
+                    }
+                }
                 logger.info("call remote service success,provider name:{}, remote service address:{}",
                         responseDTO.getProviderName(), responseDTO.getRemoteAddress());
                 return responseDTO.getResult();

@@ -3,6 +3,8 @@ package com.xiaobai.nettyrpc.common.properties;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 /**
  * 配置属性类
  *
@@ -56,5 +58,20 @@ public class NettyRpcProperties {
      * 提供者处理线程池空闲线程存活时间
      */
     private Integer providerKeepAliveSeconds;
-
+    /**
+     * 消费者前置处理器全限定类名列表
+     */
+    private List<String> consumerPreProcessors;
+    /**
+     * 消费者后置处理器全限定类名列表
+     */
+    private List<String> consumerPostProcessors;
+    /**
+     * 提供者前置处理器全限定类名列表
+     */
+    private List<String> providerPreProcessors;
+    /**
+     * 提供者后置处理器全限定类名列表
+     */
+    private List<String> providerPostProcessors;
 }

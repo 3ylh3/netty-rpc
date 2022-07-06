@@ -31,7 +31,9 @@ public class CommonAutoConfiguration {
         if (!StringUtils.isBlank(nettyRpcProperties.getNacosAddress())) {
             Properties properties = new Properties();
             properties.setProperty(CommonConstants.SERVER_ADDR, nettyRpcProperties.getNacosAddress());
-            properties.setProperty(CommonConstants.NAMESPACE, nettyRpcProperties.getNamespaceId());
+            if (!StringUtils.isBlank(nettyRpcProperties.getNamespaceId())) {
+                properties.setProperty(CommonConstants.NAMESPACE, nettyRpcProperties.getNamespaceId());
+            }
             return NamingFactory.createNamingService(properties);
         } else {
             return null;
