@@ -12,5 +12,5 @@ import java.lang.annotation.Target;
 @Component
 public @interface Service {
     String group() default "default";
-    double weight() default 1d;
+    int weight() default 1;
 }

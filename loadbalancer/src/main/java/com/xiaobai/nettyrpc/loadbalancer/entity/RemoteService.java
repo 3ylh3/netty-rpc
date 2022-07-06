@@ -27,6 +27,10 @@ public class RemoteService {
      */
     private Integer port;
     /**
+     * 权重
+     */
+    private Integer weight;
+    /**
      * 是否健康
      */
     private Boolean isHealthy;

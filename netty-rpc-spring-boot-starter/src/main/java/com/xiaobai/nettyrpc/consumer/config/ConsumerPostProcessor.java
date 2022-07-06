@@ -86,6 +86,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                             remoteService.setGroup(remote.group());
                             remoteService.setIp(serviceIp);
                             remoteService.setPort(servicePort);
+                            remoteService.setWeight(1);
                             remoteService.setIsHealthy(true);
                             remoteServices.add(remoteService);
                         }

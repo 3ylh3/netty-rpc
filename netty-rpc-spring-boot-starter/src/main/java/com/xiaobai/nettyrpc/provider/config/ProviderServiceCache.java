@@ -79,6 +79,7 @@ public class ProviderServiceCache {
                 service.put(CommonConstants.INTERFACE, providerService.getInterfaceName());
                 service.put(CommonConstants.GROUP, providerService.getGroup());
                 service.put(CommonConstants.IMPL, providerService.getImplName());
+                service.put(CommonConstants.WEIGHT, providerService.getWeight());
                 services.add(service);
             }
         }

@@ -26,4 +26,8 @@ public class ProviderService {
      * 实现类名称
      */
     private String implName;
+    /**
+     * 权重
+     */
+    private Integer weight;
 }

@@ -30,5 +30,5 @@ public class CommonConstants {
     public static final String GROUP = "group";
     public static final String IMPL = "impl";
     public static final String SERVICES = "services";
-    public static final String LOCALHOST = "127.0.0.1";
+    public static final String WEIGHT = "weight";
 }

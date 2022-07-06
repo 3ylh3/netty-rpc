@@ -56,6 +56,7 @@ public class ProviderPostProcessor implements BeanPostProcessor {
                         throw new BeanCreationException("provider name is null!");
                     }
                     providerService.setProviderName(providerName);
+                    providerService.setWeight(((Service) annotation).weight());
                     ProviderServiceCache.add(interfaceClazz.getName(), providerService);
                 }
             }
