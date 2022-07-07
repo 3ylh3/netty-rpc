@@ -87,7 +87,7 @@ public class NettyClientCache {
         if (INTERFACE_ADDRESS_MAP.containsKey(key)) {
             List<RemoteService> list = INTERFACE_ADDRESS_MAP.get(key);
             // 根据providerName和group筛选
-            List<RemoteService> services = RemoteServiceUtil.selectRemoteService(list, providerName, group);
+            List<RemoteService> services = RemoteServiceUtil.selectRemoteServiceDistinct(list, providerName, group);
             if (services.isEmpty()) {
                 logger.error("no remote service find");
                 return null;
@@ -251,6 +251,9 @@ public class NettyClientCache {
                                                             List<Instance> list) {
         List<RemoteService> remoteServices = new ArrayList<>();
         for (Instance instance : list) {
+            if (!instance.isHealthy()) {
+                continue;
+            }
             Map<String, String> metadata = instance.getMetadata();
             JSONArray array = JSON.parseArray(metadata.get(CommonConstants.SERVICES));
             // 解析元数据
@@ -263,6 +266,8 @@ public class NettyClientCache {
                     remoteService.setIp(instance.getIp());
                     remoteService.setPort(instance.getPort());
                     remoteService.setGroup(object.getString(CommonConstants.GROUP));
+                    remoteService.setWeight(object.getInteger(CommonConstants.WEIGHT));
+                    remoteService.setIsHealthy(true);
                     remoteServices.add(remoteService);
                 }
             }

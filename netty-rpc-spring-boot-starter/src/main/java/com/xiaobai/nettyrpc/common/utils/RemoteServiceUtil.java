@@ -18,13 +18,13 @@ import java.util.Set;
 public class RemoteServiceUtil {
 
     /**
-     * 根据提供者名称和接口组筛选remoteService
+     * 根据提供者名称和接口组筛选remoteService,按照providerName group和ip端口去重
      * @param list remoteService列表
      * @param providerName 提供者名
      * @param group 接口组
      * @return 结果
      */
-    public static List<RemoteService> selectRemoteService(List<RemoteService> list, String providerName,
+    public static List<RemoteService> selectRemoteServiceDistinct(List<RemoteService> list, String providerName,
                                                           String group) {
         List<RemoteService> services = new ArrayList<>();
         // 滤重用
@@ -38,18 +38,47 @@ public class RemoteServiceUtil {
                     && !StringUtils.equals(group, remoteService.getGroup())) {
                 continue;
             }
+            RemoteService tmp = new RemoteService();
+            tmp.copyFrom(remoteService);
             if (StringUtils.equals(CommonConstants.DEFAULT, providerName)) {
-                remoteService.setProviderName(CommonConstants.DEFAULT);
+                tmp.setProviderName(CommonConstants.DEFAULT);
             }
             if (StringUtils.equals(CommonConstants.DEFAULT, group)) {
-                remoteService.setGroup(CommonConstants.DEFAULT);
+                tmp.setGroup(CommonConstants.DEFAULT);
             }
             String key = remoteService.getProviderName() + remoteService.getGroup() + remoteService.getIp()
                     + remoteService.getPort();
-            if (!set.contains(key) && remoteService.getIsHealthy()) {
-                services.add(remoteService);
+            if (!set.contains(key) && tmp.getIsHealthy()) {
+                services.add(tmp);
                 set.add(key);
             }
+        }
+        return services;
+    }
+
+    /**
+     * 根据提供者名称和服务组筛选remoteService
+     * @param list remoteService列表
+     * @param providerName 提供者名
+     * @param group 服务组
+     * @return 结果
+     */
+    public static List<RemoteService> selectRemoteService(List<RemoteService> list, String providerName,
+                                                          String group) {
+        List<RemoteService> services = new ArrayList<>();
+        for (RemoteService remoteService : list) {
+            if (!StringUtils.equals(CommonConstants.DEFAULT, providerName)
+                    && !StringUtils.equals(providerName, remoteService.getProviderName())) {
+                continue;
+            }
+            if (!StringUtils.equals(CommonConstants.DEFAULT, group)
+                    && !StringUtils.equals(group, remoteService.getGroup())) {
+                continue;
+            }
+            if (!remoteService.getIsHealthy()) {
+                continue;
+            }
+            services.add(remoteService);
         }
         return services;
     }

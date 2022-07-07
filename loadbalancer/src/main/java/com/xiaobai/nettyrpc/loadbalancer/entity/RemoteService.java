@@ -34,4 +34,13 @@ public class RemoteService {
      * 是否健康
      */
     private Boolean isHealthy;
+
+    public void copyFrom(RemoteService target) {
+        this.providerName = target.getProviderName();
+        this.group = target.getGroup();
+        this.ip = target.getIp();
+        this.port = target.getPort();
+        this.weight = target.getWeight();
+        this.isHealthy = target.getIsHealthy();
+    }
 }
