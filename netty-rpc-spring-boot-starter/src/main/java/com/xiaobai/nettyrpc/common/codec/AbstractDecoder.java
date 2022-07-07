@@ -1,6 +1,6 @@
-package com.xiaobai.nettyrpc.codec;
+package com.xiaobai.nettyrpc.common.codec;
 
-import com.xiaobai.nettyrpc.dto.TransferDTO;
+import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;

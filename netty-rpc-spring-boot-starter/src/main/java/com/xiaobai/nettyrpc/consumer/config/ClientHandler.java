@@ -1,6 +1,6 @@
 package com.xiaobai.nettyrpc.consumer.config;
 
-import com.xiaobai.nettyrpc.dto.TransferDTO;
+import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

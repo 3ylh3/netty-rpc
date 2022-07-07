@@ -1,6 +1,6 @@
-package com.xiaobai.nettyrpc.loadbalancer.service;
+package com.xiaobai.nettyrpc.common.loadbalancer.service;
 
-import com.xiaobai.nettyrpc.loadbalancer.entity.RemoteService;
+import com.xiaobai.nettyrpc.common.entity.RemoteService;
 
 import java.util.List;
 

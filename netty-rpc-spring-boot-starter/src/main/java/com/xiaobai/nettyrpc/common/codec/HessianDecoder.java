@@ -1,7 +1,7 @@
-package com.xiaobai.nettyrpc.codec;
+package com.xiaobai.nettyrpc.common.codec;
 
 import com.caucho.hessian.io.Hessian2Input;
-import com.xiaobai.nettyrpc.dto.TransferDTO;
+import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 
 import java.io.ByteArrayInputStream;
 

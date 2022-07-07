@@ -1,6 +1,6 @@
 package com.xiaobai.nettyrpc.provider.processor;
 
-import com.xiaobai.nettyrpc.dto.TransferDTO;
+import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 
 /**
  * 提供者后置处理

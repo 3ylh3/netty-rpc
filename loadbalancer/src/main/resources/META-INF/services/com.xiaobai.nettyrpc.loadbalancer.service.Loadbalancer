@@ -1,3 +1,0 @@
-com.xiaobai.nettyrpc.loadbalancer.service.impl.RandomLoadbalancer
-com.xiaobai.nettyrpc.loadbalancer.service.impl.WeightLoadbalancer
-com.xiaobai.nettyrpc.loadbalancer.service.impl.PollingLoadbalancer

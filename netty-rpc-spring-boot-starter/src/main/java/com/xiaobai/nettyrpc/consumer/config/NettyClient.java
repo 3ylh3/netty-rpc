@@ -1,7 +1,7 @@
 package com.xiaobai.nettyrpc.consumer.config;
 
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
-import com.xiaobai.nettyrpc.dto.TransferDTO;
+import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 import io.netty.channel.ChannelFuture;
 
 /**

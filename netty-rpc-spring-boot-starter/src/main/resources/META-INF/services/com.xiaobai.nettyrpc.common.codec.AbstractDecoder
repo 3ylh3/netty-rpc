@@ -1,0 +1,2 @@
+com.xiaobai.nettyrpc.common.codec.HessianDecoder
+com.xiaobai.nettyrpc.common.codec.JSONDecoder

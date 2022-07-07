@@ -1,6 +1,6 @@
 package com.xiaobai.nettyrpc.consumer.processor;
 
-import com.xiaobai.nettyrpc.dto.TransferDTO;
+import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 
 /**
  * 消费者前置处理器

@@ -1,4 +1,4 @@
-package com.xiaobai.nettyrpc.dto;
+package com.xiaobai.nettyrpc.common.dto;
 
 import lombok.Data;
 

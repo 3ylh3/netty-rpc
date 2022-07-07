@@ -3,7 +3,7 @@ package com.xiaobai.nettyrpc.provider.config;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.exceptions.RemoteCallException;
 import com.xiaobai.nettyrpc.common.utils.SPIUtil;
-import com.xiaobai.nettyrpc.dto.TransferDTO;
+import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 import com.xiaobai.nettyrpc.provider.processor.ProviderPreProcessor;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.StringUtils;

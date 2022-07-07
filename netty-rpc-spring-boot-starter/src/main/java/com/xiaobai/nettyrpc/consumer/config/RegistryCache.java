@@ -12,7 +12,7 @@ import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.common.utils.RemoteServiceUtil;
-import com.xiaobai.nettyrpc.loadbalancer.entity.RemoteService;
+import com.xiaobai.nettyrpc.common.entity.RemoteService;
 
 import java.util.ArrayList;
 import java.util.HashMap;

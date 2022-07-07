@@ -1,6 +1,6 @@
 package com.xiaobai.nettyrpc.consumer.config;
 
-import com.xiaobai.nettyrpc.dto.TransferDTO;
+import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
