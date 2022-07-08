@@ -102,8 +102,8 @@ public abstract byte[] encode(TransferDTO msg) throws Exception;
  */
 public abstract TransferDTO decode(byte[] bytes) throws Exception;
 ```
-3.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.common.codec.AbstractEncoder文件，内容为自定义编码器全限定类名。
-4.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.common.codec.AbstractDecoder文件，内容为自定义解码器全限定类名。
+3.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.common.codec.AbstractEncoder文件，内容为自定义编码器全限定类名。  
+4.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.common.codec.AbstractDecoder文件，内容为自定义解码器全限定类名。  
 5.在application.properties配置文件中指定自定义编码器和解码器：
 ```properties
 #自定义编码器全限定类名
