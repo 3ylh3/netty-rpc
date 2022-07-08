@@ -64,7 +64,7 @@ public class TestController {
  */
 RemoteService selectRemoteService(String providerName, String interfaceName, String group, List<RemoteService> list);
 ```
-2.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.common.loadbalancer.service.Loadbalancer文件，内容为自定义负载均衡器全限定类名。
+2.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.common.loadbalancer.service.Loadbalancer文件，内容为自定义负载均衡器全限定类名。  
 3.在@Remote注解中指定自定义负载均衡器全限定类名。
 ### 1.1.5 指定超时时间
 可在配置文件中指定调用超时时长(s)，默认60s:
@@ -81,7 +81,7 @@ netty-rpc.decode-class-name=com.xiaobai.nettyrpc.common.codec.JSONDecoder
  - Hessian(默认)
  - JSON(com.xiaobai.nettyrpc.common.codec.JSONEncoder和com.xiaobai.nettyrpc.common.codec.JSONDecoder)
 
-可以自定义序列化方式，具体方法如下：
+可以自定义序列化方式，具体方法如下：  
 1.编写自定义编码器，继承com.xiaobai.nettyrpc.common.codec.AbstractEncoder类，实现encode方法，该方法描述如下：
 ```java
 /**
@@ -113,7 +113,7 @@ netty-rpc.decode-class-name=xxx
 ```
 注：需要注意Consumer和Provider需使用同样的序列化方式，否则会报错。
 ### 1.1.7 自定义远程调用前置处理和后置处理
-netty-rpc框架提供了Consumer远程调用前置处理和后置处理机制，可以自定义前置处理器以及后置处理器，在远程调用之前和之后做处理，具体方法如下：
+netty-rpc框架提供了Consumer远程调用前置处理和后置处理机制，可以自定义前置处理器以及后置处理器，在远程调用之前和之后做处理，具体方法如下：  
 1.编写自定义Consumer前置处理器，继承com.xiaobai.nettyrpc.consumer.processor.ConsumerPreProcessor接口，实现doPreProcess方法，该方法描述如下：
 ```java
 /**
@@ -132,8 +132,8 @@ void doPreProcess(TransferDTO requestDTO) throws Exception;
  */
 void doPostProcess(TransferDTO responseDTO) throws Exception;
 ```
-3.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.consumer.processor.ConsumerPreProcessor文件，文件内容为自定义Consumer前置处理器全限定类名。
-4.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor文件，文件内容为自定义Consumer后置处理器全限定类名。
+3.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.consumer.processor.ConsumerPreProcessor文件，文件内容为自定义Consumer前置处理器全限定类名。  
+4.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor文件，文件内容为自定义Consumer后置处理器全限定类名。  
 5.在application.properties配置文件中指定Consumer前置处理链和后置处理链：
 ```properties
 #Consumer前置处理链（前置处理器全限定类名），多个前置处理器逗号分隔，按先后顺序执行
@@ -173,7 +173,7 @@ public class TestService implements Test {
 ### 1.2.3 指定序列化方法
 同1.1.6
 ### 1.2.4 自定义远程调用前置处理和后置处理
-netty-rpc框架提供了Provider远程调用前置处理和后置处理机制，可以自定义前置处理器以及后置处理器，在实际调用接口方法之前和之后做处理，具体方法如下：
+netty-rpc框架提供了Provider远程调用前置处理和后置处理机制，可以自定义前置处理器以及后置处理器，在实际调用接口方法之前和之后做处理，具体方法如下：  
 1.编写自定义Provider前置处理器，继承com.xiaobai.nettyrpc.provider.processor.ProviderPreProcessor接口，实现doPreProcess方法，该方法描述如下：
 ```java
 /**
@@ -192,8 +192,8 @@ void doPreProcess(TransferDTO requestDTO) throws Exception;
  */
 void doPostProcess(TransferDTO responseDTO) throws Exception;
 ```
-3.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.provider.processor.ProviderPreProcessor文件，文件内容为自定义Provider前置处理器全限定类名。
-4.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.consumer.processor.ProviderPostProcessor文件，文件内容为自定义Provider后置处理器全限定类名。
+3.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.provider.processor.ProviderPreProcessor文件，文件内容为自定义Provider前置处理器全限定类名。  
+4.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.consumer.processor.ProviderPostProcessor文件，文件内容为自定义Provider后置处理器全限定类名。  
 5.在application.properties配置文件中指定Provider前置处理链和后置处理链：
 ```properties
 #Provider前置处理链（前置处理器全限定类名），多个前置处理器逗号分隔，按先后顺序执行
