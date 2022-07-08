@@ -36,7 +36,7 @@ public class ConsumerAutoConfiguration {
     }
 
     @Bean
-    @DependsOn({"registryCache"})
+    @DependsOn({"registryCache", "collector"})
     @ConditionalOnMissingBean(ConsumerPostProcessor.class)
     public ConsumerPostProcessor initConsumerPostProcessor() throws Exception {
         return new ConsumerPostProcessor();

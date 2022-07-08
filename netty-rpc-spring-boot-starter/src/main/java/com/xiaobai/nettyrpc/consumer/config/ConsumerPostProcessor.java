@@ -1,6 +1,8 @@
 package com.xiaobai.nettyrpc.consumer.config;
 
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
+import com.xiaobai.nettyrpc.common.entity.Collector;
+import com.xiaobai.nettyrpc.common.enums.MetricsEnum;
 import com.xiaobai.nettyrpc.common.exceptions.RemoteCallException;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.common.utils.SPIUtil;
@@ -8,6 +10,7 @@ import com.xiaobai.nettyrpc.consumer.annotations.Remote;
 import com.xiaobai.nettyrpc.consumer.processor.ConsumerPreProcessor;
 import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 import com.xiaobai.nettyrpc.common.entity.RemoteService;
+import io.prometheus.client.Counter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +46,8 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
     private NettyRpcProperties nettyRpcProperties;
     @Autowired
     private RegistryCache registryCache;
+    @Autowired
+    private Collector collector;
 
     /**
      * 解析@Remote注解，获取接口全限定类名并从注册中心获取远程server端地址，建立netty长连接并缓存，使用cglib动态代理生成调用对象
@@ -132,6 +137,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 // 从netty client缓存中获取client
                 NettyClient nettyClient = NettyClientCache.getClient(key, providerName, group, remote.loadbalancer());
                 if (null == nettyClient) {
+                    recordFailed();
                     throw new RemoteCallException("no provider find");
                 }
                 // 构造请求对象
@@ -157,6 +163,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                         }
                     } catch (Exception e) {
                         logger.error("do pre processor exception:", e);
+                        recordFailed();
                         throw e;
                     }
                 }
@@ -164,9 +171,11 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 TransferDTO responseDTO = nettyClient.send(requestDTO);
                 if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
                     logger.error("call remote service error:{}", responseDTO.getResponseCode());
+                    recordFailed();
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 } else if (CommonConstants.TIMEOUT_CODE == responseDTO.getResponseCode()) {
                     logger.error("call remote service timeout");
+                    recordFailed();
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 }
                 // 使用SPI机制加载配置文件中指定的处理链做前置处理
@@ -182,15 +191,35 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                         }
                     } catch (Exception e) {
                         logger.error("do post processor exception:", e);
+                        recordFailed();
                         throw e;
                     }
                 }
                 logger.info("call remote service success,provider name:{}, remote service address:{}",
                         responseDTO.getProviderName(), responseDTO.getRemoteAddress());
+                recordSuccess();
                 return responseDTO.getResult();
             }
         });
         field.setAccessible(true);
         field.set(bean, enhancer.create());
+    }
+
+    /**
+     * 记录失败次数
+     */
+    private void recordFailed() {
+        if (!collector.isEmpty()) {
+            ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(CommonConstants.FAIL).inc();
+        }
+    }
+
+    /**
+     * 记录成功次数
+     */
+    private void recordSuccess() {
+        if (!collector.isEmpty()) {
+            ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(CommonConstants.SUCCESS).inc();
+        }
     }
 }

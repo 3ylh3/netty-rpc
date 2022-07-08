@@ -31,4 +31,12 @@ public class CommonConstants {
     public static final String IMPL = "impl";
     public static final String SERVICES = "services";
     public static final String WEIGHT = "weight";
+    public static final String METRIC_FILE = "metrics.json";
+    public static final String UTF8 = "UTF-8";
+    public static final String COUNTER = "Counter";
+    public static final String GAUGE = "Gauge";
+    public static final String HISTOGRAM = "Histogram";
+    public static final String SUMMARY = "Summary";
+    public static final String FAIL = "fail";
+    public static final String SUCCESS = "success";
 }

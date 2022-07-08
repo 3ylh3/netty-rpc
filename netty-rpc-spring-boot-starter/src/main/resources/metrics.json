@@ -1,0 +1,8 @@
+[
+  {
+    "name": "remote_call_total",
+    "description": "远程调用次数",
+    "type": "Counter",
+    "labels": ["type"]
+  }
+]
