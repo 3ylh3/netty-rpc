@@ -27,5 +27,11 @@ public abstract class AbstractDecoder extends ByteToMessageDecoder {
         in.skipBytes(in.readableBytes());
     }
 
+    /**
+     * 解码
+     * @param bytes byte数组
+     * @return 解码后返回对象
+     * @throws Exception 异常
+     */
     public abstract TransferDTO decode(byte[] bytes) throws Exception;
 }

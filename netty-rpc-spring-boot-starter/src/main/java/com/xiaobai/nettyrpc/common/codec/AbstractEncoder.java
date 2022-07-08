@@ -23,5 +23,11 @@ public abstract class AbstractEncoder extends MessageToByteEncoder<TransferDTO> 
         out.writeBytes("\r\n".getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * 编码
+     * @param msg 请求信息
+     * @return 编码后byte数组
+     * @throws Exception 异常
+     */
     public abstract byte[] encode(TransferDTO msg) throws Exception;
 }
