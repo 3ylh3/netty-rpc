@@ -106,21 +106,21 @@ public class ClientHeartBeat {
                         } else {
                             count++;
                         }
-                        if (5 <= count) {
+                        if (5 <= count && remoteService.getIsHealthy()) {
                             // 连续5次心跳失败,将远程服务状态更新为不可用
                             remoteService.setIsHealthy(false);
                             logger.info("remote server {} turn to unhealthy", key);
-                            // 失败次数清0
-                            count = 0;
                         }
-                    } else if (!remoteService.getIsHealthy()) {
-                        logger.info("remote server {} turn to healthy", key);
-                        remoteService.setIsHealthy(true);
+                    } else {
+                        // 记录成功次数metric
+                        recordMetric(key, CommonConstants.SUCCESS);
+                        if (!remoteService.getIsHealthy()) {
+                            logger.info("remote server {} turn to healthy", key);
+                            remoteService.setIsHealthy(true);
+                        }
                     }
                     // 记录失败次数
                     map.put(key, count);
-                    // 记录成功次数metric
-                    recordMetric(key, CommonConstants.SUCCESS);
                 }
             }
         }
