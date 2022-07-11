@@ -2,6 +2,7 @@ package com.xiaobai.nettyrpc.consumer.config;
 
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.dto.TransferDTO;
+import com.xiaobai.nettyrpc.common.utils.TimeUtil;
 import io.netty.channel.ChannelFuture;
 
 /**
@@ -32,9 +33,9 @@ public class NettyClient {
      */
     public TransferDTO send(TransferDTO requestDTO) {
         channelFuture.channel().writeAndFlush(requestDTO);
-        long start = System.currentTimeMillis();
+        long start = TimeUtil.currentTimeMillis();
         while(true) {
-            if (System.currentTimeMillis() - start > timeout * 1000) {
+            if (TimeUtil.currentTimeMillis() - start > timeout * 1000) {
                 // 超时
                 TransferDTO response = new TransferDTO();
                 response.setResponseCode(CommonConstants.TIMEOUT_CODE);

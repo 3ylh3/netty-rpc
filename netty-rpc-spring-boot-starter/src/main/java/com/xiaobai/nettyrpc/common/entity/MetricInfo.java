@@ -26,4 +26,8 @@ public class MetricInfo {
      * labels
      */
     private String[] labels;
+    /**
+     * buckets
+     */
+    private double[] buckets;
 }

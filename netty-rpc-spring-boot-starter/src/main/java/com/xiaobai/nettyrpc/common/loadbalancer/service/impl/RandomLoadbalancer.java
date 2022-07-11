@@ -2,6 +2,7 @@ package com.xiaobai.nettyrpc.common.loadbalancer.service.impl;
 
 import com.xiaobai.nettyrpc.common.entity.RemoteService;
 import com.xiaobai.nettyrpc.common.loadbalancer.service.Loadbalancer;
+import com.xiaobai.nettyrpc.common.utils.TimeUtil;
 
 import java.util.List;
 import java.util.Random;
@@ -18,7 +19,7 @@ public class RandomLoadbalancer implements Loadbalancer {
     public RemoteService selectRemoteService(String providerName, String interfaceClass, String group,
                                              List<RemoteService> list) {
         if (null != list && !list.isEmpty()) {
-            Random random = new Random(System.currentTimeMillis());
+            Random random = new Random(TimeUtil.currentTimeMillis());
             int index = random.nextInt(list.size());
             return list.get(index);
         } else {

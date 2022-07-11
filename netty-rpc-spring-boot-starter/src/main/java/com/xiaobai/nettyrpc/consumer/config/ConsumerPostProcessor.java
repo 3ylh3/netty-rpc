@@ -6,11 +6,13 @@ import com.xiaobai.nettyrpc.common.enums.MetricsEnum;
 import com.xiaobai.nettyrpc.common.exceptions.RemoteCallException;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.common.utils.SPIUtil;
+import com.xiaobai.nettyrpc.common.utils.TimeUtil;
 import com.xiaobai.nettyrpc.consumer.annotations.Remote;
 import com.xiaobai.nettyrpc.consumer.processor.ConsumerPreProcessor;
 import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 import com.xiaobai.nettyrpc.common.entity.RemoteService;
 import io.prometheus.client.Counter;
+import io.prometheus.client.Histogram;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,10 +136,11 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 String requestId = UUID.randomUUID().toString();
                 logger.info("start call remote service:{},request id:{}", field.getType().getName()
                         + CommonConstants.ADDRESS_DELIMITER + method.getName(), requestId);
+                long startTime = TimeUtil.currentTimeMillis();
                 // 从netty client缓存中获取client
                 NettyClient nettyClient = NettyClientCache.getClient(key, providerName, group, remote.loadbalancer());
                 if (null == nettyClient) {
-                    recordFailed();
+                    recordFailed(startTime);
                     throw new RemoteCallException("no provider find");
                 }
                 // 构造请求对象
@@ -163,7 +166,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                         }
                     } catch (Exception e) {
                         logger.error("do pre processor exception:", e);
-                        recordFailed();
+                        recordFailed(startTime);
                         throw e;
                     }
                 }
@@ -171,11 +174,11 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 TransferDTO responseDTO = nettyClient.send(requestDTO);
                 if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
                     logger.error("call remote service error:{}", responseDTO.getResponseCode());
-                    recordFailed();
+                    recordFailed(startTime);
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 } else if (CommonConstants.TIMEOUT_CODE == responseDTO.getResponseCode()) {
                     logger.error("call remote service timeout");
-                    recordFailed();
+                    recordFailed(startTime);
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 }
                 // 使用SPI机制加载配置文件中指定的处理链做前置处理
@@ -191,13 +194,13 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                         }
                     } catch (Exception e) {
                         logger.error("do post processor exception:", e);
-                        recordFailed();
+                        recordFailed(startTime);
                         throw e;
                     }
                 }
                 logger.info("call remote service success,provider name:{}, remote service address:{}",
                         responseDTO.getProviderName(), responseDTO.getRemoteAddress());
-                recordSuccess();
+                recordSuccess(startTime);
                 return responseDTO.getResult();
             }
         });
@@ -206,20 +209,28 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
     }
 
     /**
-     * 记录失败次数
+     * 记录失败次数以及耗时
+     * @param startTime 开始时间
      */
-    private void recordFailed() {
+    private void recordFailed(long startTime) {
         if (!collector.isEmpty()) {
+            long endTime = TimeUtil.currentTimeMillis();
             ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(CommonConstants.FAIL).inc();
+            ((Histogram) collector.get(MetricsEnum.REMOTE_CALL_TIME_CONSUME_RANGE.getName()))
+                    .observe(endTime - startTime);
         }
     }
 
     /**
-     * 记录成功次数
+     * 记录成功次数以及耗时
+     * @param startTime 开始时间
      */
-    private void recordSuccess() {
+    private void recordSuccess(long startTime) {
         if (!collector.isEmpty()) {
+            long endTime = TimeUtil.currentTimeMillis();
             ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(CommonConstants.SUCCESS).inc();
+            ((Histogram) collector.get(MetricsEnum.REMOTE_CALL_TIME_CONSUME_RANGE.getName()))
+                    .observe(endTime - startTime);
         }
     }
 }

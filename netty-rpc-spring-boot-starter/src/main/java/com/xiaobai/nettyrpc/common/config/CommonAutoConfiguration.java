@@ -86,7 +86,7 @@ public class CommonAutoConfiguration {
                     case CommonConstants.HISTOGRAM:
                         collector.set(metricInfo.getName(), Histogram.build().name(metricInfo.getName())
                                 .help(metricInfo.getDescription()).labelNames(metricInfo.getLabels())
-                                .register(registry.getPrometheusRegistry()));
+                                .buckets(metricInfo.getBuckets()).register(registry.getPrometheusRegistry()));
                         break;
                     case CommonConstants.SUMMARY:
                         collector.set(metricInfo.getName(), Summary.build().name(metricInfo.getName())

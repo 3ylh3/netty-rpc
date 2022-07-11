@@ -2,6 +2,7 @@ package com.xiaobai.nettyrpc.common.loadbalancer.service.impl;
 
 import com.xiaobai.nettyrpc.common.entity.RemoteService;
 import com.xiaobai.nettyrpc.common.loadbalancer.service.Loadbalancer;
+import com.xiaobai.nettyrpc.common.utils.TimeUtil;
 
 import java.util.List;
 import java.util.Random;
@@ -33,7 +34,7 @@ public class WeightLoadbalancer implements Loadbalancer {
         for (RemoteService remoteService : list) {
             totalWeight += remoteService.getWeight();
         }
-        Random random = new Random(System.currentTimeMillis());
+        Random random = new Random(TimeUtil.currentTimeMillis());
         int randomWithWeight = random.nextInt(totalWeight);
         int tmp = 0;
         for (RemoteService remoteService : list) {
