@@ -42,8 +42,8 @@ public class CommonAutoConfiguration {
     private NettyRpcProperties nettyRpcProperties;
     @Autowired
     private PrometheusMeterRegistry registry;
-    @Value("${management.metrics.export.prometheus.enabled:false}")
-    private boolean enablePrometheus;
+    @Value("${management.endpoints.web.exposure.include:null}")
+    private String enablePrometheus;
 
     @Bean("namingService")
     @ConditionalOnMissingBean(NamingService.class)
@@ -64,7 +64,7 @@ public class CommonAutoConfiguration {
     @ConditionalOnMissingBean(Collector.class)
     public Collector initCollector() throws Exception {
         Collector collector = new Collector();
-        if (enablePrometheus) {
+        if (StringUtils.equals(enablePrometheus, CommonConstants.PROMETHEUS)) {
             //解析json文件，根据指标列表创建对应类型的prometheus collector并注册
             Resource resource = new ClassPathResource(CommonConstants.METRIC_FILE);
             InputStream inputStream = resource.getInputStream();
@@ -96,9 +96,7 @@ public class CommonAutoConfiguration {
                     default:
                 }
             }
-            return collector;
-        } else {
-            return null;
         }
+        return collector;
     }
 }

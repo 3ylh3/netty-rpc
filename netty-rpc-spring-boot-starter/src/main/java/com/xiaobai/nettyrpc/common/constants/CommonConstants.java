@@ -40,4 +40,5 @@ public class CommonConstants {
     public static final String FAIL = "fail";
     public static final String SUCCESS = "success";
     public static final String TIME_TICK_THREAD = "time-tick-thread";
+    public static final String PROMETHEUS = "prometheus";
 }
