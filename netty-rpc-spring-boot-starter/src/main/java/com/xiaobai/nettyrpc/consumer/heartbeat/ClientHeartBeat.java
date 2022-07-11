@@ -3,11 +3,14 @@ package com.xiaobai.nettyrpc.consumer.heartbeat;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
+import com.xiaobai.nettyrpc.common.entity.Collector;
+import com.xiaobai.nettyrpc.common.enums.MetricsEnum;
 import com.xiaobai.nettyrpc.common.properties.NettyRpcProperties;
 import com.xiaobai.nettyrpc.consumer.config.NettyClient;
 import com.xiaobai.nettyrpc.consumer.config.NettyClientCache;
 import com.xiaobai.nettyrpc.common.entity.RemoteService;
 import com.xiaobai.nettyrpc.common.dto.TransferDTO;
+import io.prometheus.client.Counter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +42,8 @@ public class ClientHeartBeat {
     private NettyRpcProperties nettyRpcProperties;
     @Autowired
     private NamingService namingService;
+    @Autowired
+    private Collector collector;
 
     /**
      * 每个30秒发送心跳，检测与服务端的长链接是否可用
@@ -73,6 +78,8 @@ public class ClientHeartBeat {
                             NettyClientCache.updateCache(remoteService.getProviderName(), list, nettyRpcProperties);
                         } catch (Exception e) {
                             logger.error("get instance from nacos exception:", e);
+                            // 记录失败次数metric
+                            recordMetric(key, CommonConstants.FAIL);
                         }
                     }
 
@@ -92,6 +99,8 @@ public class ClientHeartBeat {
                     if (CommonConstants.SUCCESS_CODE != responseDTO.getResponseCode()) {
                         // 发送心跳失败
                         logger.error("send heart beat error");
+                        // 记录失败次数metric
+                        recordMetric(key, CommonConstants.FAIL);
                         if (map.containsKey(key)) {
                             count = map.get(key) + 1;
                         } else {
@@ -110,8 +119,21 @@ public class ClientHeartBeat {
                     }
                     // 记录失败次数
                     map.put(key, count);
+                    // 记录成功次数metric
+                    recordMetric(key, CommonConstants.SUCCESS);
                 }
             }
+        }
+    }
+
+    /**
+     * 记录心跳次数metric
+     * @param remoteAddress 远程服务地址
+     * @param type 类型
+     */
+    private void recordMetric(String remoteAddress, String type) {
+        if (!collector.isEmpty()) {
+            ((Counter) collector.get(MetricsEnum.HEARTBEAT_TOTAL.getName())).labels(remoteAddress, type).inc();
         }
     }
 }
