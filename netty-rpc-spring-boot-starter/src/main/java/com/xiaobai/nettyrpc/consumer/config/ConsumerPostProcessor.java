@@ -140,7 +140,8 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 // 从netty client缓存中获取client
                 NettyClient nettyClient = NettyClientCache.getClient(key, providerName, group, remote.loadbalancer());
                 if (null == nettyClient) {
-                    recordFailed(startTime, providerName, "", field.getType().getName(), group);
+                    recordMetric(startTime, providerName, "", field.getType().getName(), group,
+                            method.getName(), CommonConstants.FAIL);
                     throw new RemoteCallException("no provider find");
                 }
                 // 构造请求对象
@@ -166,7 +167,8 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                         }
                     } catch (Exception e) {
                         logger.error("do pre processor exception:", e);
-                        recordFailed(startTime, providerName, "", field.getType().getName(), group);
+                        recordMetric(startTime, providerName, "", field.getType().getName(), group,
+                                method.getName(), CommonConstants.FAIL);
                         throw e;
                     }
                 }
@@ -174,13 +176,15 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 TransferDTO responseDTO = nettyClient.send(requestDTO);
                 if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
                     logger.error("call remote service error:{}", responseDTO.getResponseCode());
-                    recordFailed(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
-                            field.getType().getName(), responseDTO.getServiceGroup());
+                    recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                            field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
+                            CommonConstants.FAIL);
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 } else if (CommonConstants.TIMEOUT_CODE == responseDTO.getResponseCode()) {
                     logger.error("call remote service timeout");
-                    recordFailed(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
-                            field.getType().getName(), responseDTO.getServiceGroup());
+                    recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                            field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
+                            CommonConstants.FAIL);
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 }
                 // 使用SPI机制加载配置文件中指定的处理链做前置处理
@@ -196,15 +200,17 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                         }
                     } catch (Exception e) {
                         logger.error("do post processor exception:", e);
-                        recordFailed(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
-                                field.getType().getName(), responseDTO.getServiceGroup());
+                        recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                                field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
+                                CommonConstants.FAIL);
                         throw e;
                     }
                 }
                 logger.info("call remote service success,provider name:{}, remote service address:{}",
                         responseDTO.getProviderName(), responseDTO.getRemoteAddress());
-                recordSuccess(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
-                        field.getType().getName(), responseDTO.getServiceGroup());
+                recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                        field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
+                        CommonConstants.SUCCESS);
                 return responseDTO.getResult();
             }
         });
@@ -213,40 +219,23 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
     }
 
     /**
-     * 记录失败次数以及耗时
+     * 记录次数以及耗时
      * @param startTime 开始时间
      * @param providerName 提供者名称
      * @param remoteAddress 远程服务地址
      * @param interfaceName 远程接口名称
      * @param group 接口实现类group
+     * @param method 方法名
+     * @param type 类型
      */
-    private void recordFailed(long startTime, String providerName, String remoteAddress, String interfaceName,
-                              String group) {
+    private void recordMetric(long startTime, String providerName, String remoteAddress, String interfaceName,
+                              String group, String method, String type) {
         if (!collector.isEmpty()) {
             long endTime = TimeUtil.currentTimeMillis();
             ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(providerName, remoteAddress,
-                    interfaceName, group, CommonConstants.FAIL).inc();
+                    interfaceName, group, method, type).inc();
             ((Histogram) collector.get(MetricsEnum.REMOTE_CALL_TIME_CONSUME_RANGE.getName())).labels(providerName,
-                    remoteAddress, interfaceName, group).observe(endTime - startTime);
-        }
-    }
-
-    /**
-     * 记录成功次数以及耗时
-     * @param startTime 开始时间
-     * @param providerName 提供者名称
-     * @param remoteAddress 远程服务地址
-     * @param interfaceName 远程接口名称
-     * @param group 接口实现类group
-     */
-    private void recordSuccess(long startTime, String providerName, String remoteAddress, String interfaceName,
-                               String group) {
-        if (!collector.isEmpty()) {
-            long endTime = TimeUtil.currentTimeMillis();
-            ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(providerName, remoteAddress,
-                    interfaceName, group, CommonConstants.SUCCESS).inc();
-            ((Histogram) collector.get(MetricsEnum.REMOTE_CALL_TIME_CONSUME_RANGE.getName())).labels(providerName,
-                    remoteAddress, interfaceName, group).observe(endTime - startTime);
+                    remoteAddress, interfaceName, group, method).observe(endTime - startTime);
         }
     }
 }
