@@ -3,13 +3,13 @@
     "name": "remote_call_total",
     "description": "远程调用次数",
     "type": "Counter",
-    "labels": ["provider_name", "interface_name", "group", "type"]
+    "labels": ["provider_name", "remote_address", "interface_name", "group", "type"]
   },
   {
     "name": "remote_call_time_consume_range",
     "description": "远程调用耗时分布",
     "type": "Histogram",
-    "labels": ["provider_name", "interface_name", "group"],
-    "buckets": [10, 20, 50, 80, 100, 150, 200, 250, 300, 500, 800, 1000, 1500, 2000]
+    "labels": ["provider_name", "remote_address", "interface_name", "group"],
+    "buckets": [10, 20, 50, 80, 100, 150, 200, 250, 300, 500, 800, 1000, 1500, 2000, 3000, 5000]
   }
 ]

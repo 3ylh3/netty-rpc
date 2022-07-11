@@ -224,7 +224,5 @@ management.endpoints.web.exposure.include=prometheus
 暴露的具体metric以及描述如下：  
 |metric|描述|类型|labels|
 |-|-|-|-|
-|remote_call_total|远程调用次数|Counter|provider_name(提供者名称),interface_name(远程调用接口名),group(接口实现类group),type(success或者fail)|
-|remote_call_time_consume_range|远程调用耗时分布|Histogram|provider_name(提供者名称),interface_name(远程调用接口名),group(接口实现类group)|
-
-
+|remote_call_total|远程调用次数|Counter|provider_name(提供者名称),remote_address(远程服务地址),interface_name(远程调用接口名),group(接口实现类group),type(success或者fail)|
+|remote_call_time_consume_range|远程调用耗时分布|Histogram|provider_name(提供者名称),remote_address(远程服务地址),interface_name(远程调用接口名),group(接口实现类group)|

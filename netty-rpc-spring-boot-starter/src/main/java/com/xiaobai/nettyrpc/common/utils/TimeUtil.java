@@ -5,7 +5,7 @@ import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 时间戳工具类
+ * 时间戳工具类,缓存时间戳，每毫秒更新一次，防止高并发调用System.currentTimeMillis()产生性能问题
  *
  * @author yinzhaojing
  * @date 2022-07-11 10:59:14

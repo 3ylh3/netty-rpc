@@ -140,7 +140,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 // 从netty client缓存中获取client
                 NettyClient nettyClient = NettyClientCache.getClient(key, providerName, group, remote.loadbalancer());
                 if (null == nettyClient) {
-                    recordFailed(startTime, providerName, field.getType().getName(), group);
+                    recordFailed(startTime, providerName, "", field.getType().getName(), group);
                     throw new RemoteCallException("no provider find");
                 }
                 // 构造请求对象
@@ -166,7 +166,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                         }
                     } catch (Exception e) {
                         logger.error("do pre processor exception:", e);
-                        recordFailed(startTime, providerName, field.getType().getName(), group);
+                        recordFailed(startTime, providerName, "", field.getType().getName(), group);
                         throw e;
                     }
                 }
@@ -174,11 +174,13 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 TransferDTO responseDTO = nettyClient.send(requestDTO);
                 if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
                     logger.error("call remote service error:{}", responseDTO.getResponseCode());
-                    recordFailed(startTime, providerName, field.getType().getName(), group);
+                    recordFailed(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                            field.getType().getName(), responseDTO.getServiceGroup());
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 } else if (CommonConstants.TIMEOUT_CODE == responseDTO.getResponseCode()) {
                     logger.error("call remote service timeout");
-                    recordFailed(startTime, providerName, field.getType().getName(), group);
+                    recordFailed(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                            field.getType().getName(), responseDTO.getServiceGroup());
                     throw new RemoteCallException(responseDTO.getResponseMessage());
                 }
                 // 使用SPI机制加载配置文件中指定的处理链做前置处理
@@ -194,13 +196,15 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                         }
                     } catch (Exception e) {
                         logger.error("do post processor exception:", e);
-                        recordFailed(startTime, providerName, field.getType().getName(), group);
+                        recordFailed(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                                field.getType().getName(), responseDTO.getServiceGroup());
                         throw e;
                     }
                 }
                 logger.info("call remote service success,provider name:{}, remote service address:{}",
                         responseDTO.getProviderName(), responseDTO.getRemoteAddress());
-                recordSuccess(startTime, providerName, field.getType().getName(), group);
+                recordSuccess(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                        field.getType().getName(), responseDTO.getServiceGroup());
                 return responseDTO.getResult();
             }
         });
@@ -212,16 +216,18 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
      * 记录失败次数以及耗时
      * @param startTime 开始时间
      * @param providerName 提供者名称
+     * @param remoteAddress 远程服务地址
      * @param interfaceName 远程接口名称
      * @param group 接口实现类group
      */
-    private void recordFailed(long startTime, String providerName, String interfaceName, String group) {
+    private void recordFailed(long startTime, String providerName, String remoteAddress, String interfaceName,
+                              String group) {
         if (!collector.isEmpty()) {
             long endTime = TimeUtil.currentTimeMillis();
-            ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(providerName, interfaceName,
-                    group, CommonConstants.FAIL).inc();
+            ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(providerName, remoteAddress,
+                    interfaceName, group, CommonConstants.FAIL).inc();
             ((Histogram) collector.get(MetricsEnum.REMOTE_CALL_TIME_CONSUME_RANGE.getName())).labels(providerName,
-                            interfaceName, group).observe(endTime - startTime);
+                    remoteAddress, interfaceName, group).observe(endTime - startTime);
         }
     }
 
@@ -229,16 +235,18 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
      * 记录成功次数以及耗时
      * @param startTime 开始时间
      * @param providerName 提供者名称
+     * @param remoteAddress 远程服务地址
      * @param interfaceName 远程接口名称
      * @param group 接口实现类group
      */
-    private void recordSuccess(long startTime, String providerName, String interfaceName, String group) {
+    private void recordSuccess(long startTime, String providerName, String remoteAddress, String interfaceName,
+                               String group) {
         if (!collector.isEmpty()) {
             long endTime = TimeUtil.currentTimeMillis();
-            ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(providerName, interfaceName,
-                    group, CommonConstants.SUCCESS).inc();
+            ((Counter) collector.get(MetricsEnum.REMOTE_CALL_TOTAL.getName())).labels(providerName, remoteAddress,
+                    interfaceName, group, CommonConstants.SUCCESS).inc();
             ((Histogram) collector.get(MetricsEnum.REMOTE_CALL_TIME_CONSUME_RANGE.getName())).labels(providerName,
-                            interfaceName, group).observe(endTime - startTime);
+                    remoteAddress, interfaceName, group).observe(endTime - startTime);
         }
     }
 }

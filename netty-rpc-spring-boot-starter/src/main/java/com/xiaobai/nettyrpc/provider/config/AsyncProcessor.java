@@ -68,6 +68,7 @@ public class AsyncProcessor {
                 responseDTO.setResponseCode(CommonConstants.SUCCESS_CODE);
                 responseDTO.setResponseMessage(CommonConstants.SUCCESS_MESSAGE);
                 responseDTO.setProviderName(providerService.getProviderName());
+                responseDTO.setServiceGroup(providerService.getGroup());
                 responseDTO.setResult(result);
                 // 使用SPI机制加载配置文件中指定的处理链做前置处理
                 if (null != providerPostProcessors && !providerPostProcessors.isEmpty()) {
