@@ -221,7 +221,7 @@ management.server.port=1123
 #开启prometheus exporter
 management.endpoints.web.exposure.include=prometheus
 ```
-注：prometheus介绍详见：[prometheus官网](https://prometheus.io/)
+注：prometheus介绍详见：[prometheus官网](https://prometheus.io/)  
 暴露的具体metrics以及描述如下：  
 |metric|描述|类型|labels|
 |-|-|-|-|
