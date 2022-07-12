@@ -67,6 +67,10 @@ public class ProviderAutoConfiguration implements AsyncConfigurer {
     @Override
     @Bean("provider-process")
     public Executor getAsyncExecutor() {
+        // 如果有远程服务需要暴露，则启动线程池
+        if (ProviderServiceCache.isEmpty()) {
+            return null;
+        }
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(null == nettyRpcProperties.getProviderCorePoolSize()
                 ? CommonConstants.DEFAULT_PROVIDER_CORE_POOL_SIZE : nettyRpcProperties.getProviderCorePoolSize());

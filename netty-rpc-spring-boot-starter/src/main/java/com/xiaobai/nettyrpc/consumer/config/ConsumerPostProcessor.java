@@ -174,20 +174,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 }
                 // 发送请求
                 TransferDTO responseDTO = nettyClient.send(requestDTO);
-                if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
-                    logger.error("call remote service error:{}", responseDTO.getResponseCode());
-                    recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
-                            field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
-                            CommonConstants.FAIL);
-                    throw new RemoteCallException(responseDTO.getResponseMessage());
-                } else if (CommonConstants.TIMEOUT_CODE == responseDTO.getResponseCode()) {
-                    logger.error("call remote service timeout");
-                    recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
-                            field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
-                            CommonConstants.FAIL);
-                    throw new RemoteCallException(responseDTO.getResponseMessage());
-                }
-                // 使用SPI机制加载配置文件中指定的处理链做前置处理
+                // 使用SPI机制加载配置文件中指定的处理链做后置处理
                 List<String> postProcessors = nettyRpcProperties.getConsumerPostProcessors();
                 if (null != postProcessors && !postProcessors.isEmpty()) {
                     List<com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor> postProcessorList =
@@ -205,6 +192,19 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                                 CommonConstants.FAIL);
                         throw e;
                     }
+                }
+                if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
+                    logger.error("call remote service error:{}", responseDTO.getResponseCode());
+                    recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                            field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
+                            CommonConstants.FAIL);
+                    throw new RemoteCallException(responseDTO.getResponseMessage());
+                } else if (CommonConstants.TIMEOUT_CODE == responseDTO.getResponseCode()) {
+                    logger.error("call remote service timeout");
+                    recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                            field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
+                            CommonConstants.FAIL);
+                    throw new RemoteCallException(responseDTO.getResponseMessage());
                 }
                 logger.info("call remote service success,provider name:{}, remote service address:{}",
                         responseDTO.getProviderName(), responseDTO.getRemoteAddress());

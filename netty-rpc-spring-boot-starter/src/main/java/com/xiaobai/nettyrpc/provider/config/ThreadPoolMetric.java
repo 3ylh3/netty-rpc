@@ -23,7 +23,7 @@ public class ThreadPoolMetric {
 
     @Autowired
     private Collector collector;
-    @Autowired
+    @Autowired(required = false)
     @Qualifier("provider-process")
     private Executor executor;
     @Autowired
@@ -33,7 +33,7 @@ public class ThreadPoolMetric {
 
     @Scheduled(cron = "0/10 * * * * ? ")
     public void exportExecutorMetric() {
-        if (!collector.isEmpty()) {
+        if (!collector.isEmpty() && null != executor) {
             String providerName = StringUtils.isBlank(nettyRpcProperties.getName()) ? applicationName
                     : nettyRpcProperties.getName();
             ((Gauge) collector.get(MetricsEnum.PROVIDER_PROCESS_EXECUTOR_CORE_POOL_SIZE.getName())).labels(providerName)
