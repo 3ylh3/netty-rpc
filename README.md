@@ -213,15 +213,16 @@ netty-rpc.provider-queue-capacity=xx
 #空闲线程存活时长，默认10s
 netty-rpc.provider-keep-alive-seconds=xx
 ```
-## 1.3 Metric指标
-netty-rpc框架提供prometheus exporter暴露metric指标能力，默认关闭，如需开启则可在application.properties添加以下配置：  
+## 1.3 Metrics指标
+netty-rpc框架提供prometheus exporter暴露metrics指标能力，默认关闭，如需开启则可在application.properties添加以下配置：  
 ```properties
 #exporter暴露端口，非必须，若不设置则为应用启动端口
 management.server.port=1123
 #开启prometheus exporter
 management.endpoints.web.exposure.include=prometheus
 ```
-暴露的具体metric以及描述如下：  
+注：prometheus介绍详见：[prometheus官网](https://prometheus.io/)
+暴露的具体metrics以及描述如下：  
 |metric|描述|类型|labels|
 |-|-|-|-|
 |remote_call_total|远程调用次数|Counter|provider_name(提供者名称),remote_address(远程服务地址),interface_name(远程调用接口名),group(接口实现类group),method(方法名),type(success或者fail)|
