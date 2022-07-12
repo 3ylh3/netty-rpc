@@ -44,24 +44,22 @@ public class AsyncProcessor {
                 responseDTO.setResponseCode(CommonConstants.SUCCESS_CODE);
             } else {
                 long startTime = TimeUtil.currentTimeMillis();
-                // 使用SPI机制加载配置文件中指定的处理链做前置处理
-                if (null != providerPreProcessors && !providerPreProcessors.isEmpty()) {
-                    List<ProviderPreProcessor> preProcessorList = SPIUtil.getObjects(providerPreProcessors,
-                            ProviderPreProcessor.class);
-                    try {
-                        for (ProviderPreProcessor providerPreProcessor : preProcessorList) {
-                            providerPreProcessor.doPreProcess(requestDTO);
-                        }
-                    } catch (Exception e) {
-                        logger.error("do pre processor exception:", e);
-                        responseDTO.setResponseCode(CommonConstants.ERROR_CODE);
-                        responseDTO.setResponseMessage(e.getMessage());
-                        // 记录失败次数以及耗时
-                        recordMetric(startTime, ctx.channel().remoteAddress().toString(),
-                                responseDTO.getInterfaceName(), "", responseDTO.getServiceGroup(),
-                                responseDTO.getMethodName(), CommonConstants.FAIL);
-                        return;
+                // 执行前置处理
+                List<ProviderPreProcessor> preProcessorList = ProviderProcessorCache
+                        .getPreProcessors(providerPreProcessors);
+                try {
+                    for (ProviderPreProcessor providerPreProcessor : preProcessorList) {
+                        providerPreProcessor.doPreProcess(requestDTO);
                     }
+                } catch (Exception e) {
+                    logger.error("do pre processor exception:", e);
+                    responseDTO.setResponseCode(CommonConstants.ERROR_CODE);
+                    responseDTO.setResponseMessage(e.getMessage());
+                    // 记录失败次数以及耗时
+                    recordMetric(startTime, ctx.channel().remoteAddress().toString(),
+                            responseDTO.getInterfaceName(), "", responseDTO.getServiceGroup(),
+                            responseDTO.getMethodName(), CommonConstants.FAIL);
+                    return;
                 }
                 try {
                     // 反射获取调用接口的实现类
@@ -86,26 +84,23 @@ public class AsyncProcessor {
                     responseDTO.setProviderName(providerService.getProviderName());
                     responseDTO.setServiceGroup(providerService.getGroup());
                     responseDTO.setResult(result);
-                    // 使用SPI机制加载配置文件中指定的处理链做前置处理
-                    if (null != providerPostProcessors && !providerPostProcessors.isEmpty()) {
-                        List<com.xiaobai.nettyrpc.provider.processor.ProviderPostProcessor> postProcessorList =
-                                SPIUtil.getObjects(providerPostProcessors,
-                                        com.xiaobai.nettyrpc.provider.processor.ProviderPostProcessor.class);
-                        try {
-                            for (com.xiaobai.nettyrpc.provider.processor.ProviderPostProcessor providerPostProcessor
-                                    : postProcessorList) {
-                                providerPostProcessor.doPostProcess(responseDTO);
-                            }
-                        } catch (Exception e) {
-                            logger.error("do post processor exception:", e);
-                            responseDTO.setResponseCode(CommonConstants.ERROR_CODE);
-                            responseDTO.setResponseMessage(e.getMessage());
-                            // 记录失败次数以及耗时
-                            recordMetric(startTime, ctx.channel().remoteAddress().toString(),
-                                    responseDTO.getInterfaceName(), providerService.getImplName(),
-                                    responseDTO.getServiceGroup(), responseDTO.getMethodName(), CommonConstants.FAIL);
-                            return;
+                    // 执行后置处理
+                    List<com.xiaobai.nettyrpc.provider.processor.ProviderPostProcessor> postProcessorList =
+                            ProviderProcessorCache.getPostProcessors(providerPostProcessors);
+                    try {
+                        for (com.xiaobai.nettyrpc.provider.processor.ProviderPostProcessor providerPostProcessor
+                                : postProcessorList) {
+                            providerPostProcessor.doPostProcess(responseDTO);
                         }
+                    } catch (Exception e) {
+                        logger.error("do post processor exception:", e);
+                        responseDTO.setResponseCode(CommonConstants.ERROR_CODE);
+                        responseDTO.setResponseMessage(e.getMessage());
+                        // 记录失败次数以及耗时
+                        recordMetric(startTime, ctx.channel().remoteAddress().toString(),
+                                responseDTO.getInterfaceName(), providerService.getImplName(),
+                                responseDTO.getServiceGroup(), responseDTO.getMethodName(), CommonConstants.FAIL);
+                        return;
                     }
                     logger.info("remote call success,client address:{},request id:{}", ctx.channel().remoteAddress(),
                             requestDTO.getRequestId());

@@ -156,42 +156,35 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 requestDTO.setParams(objects);
                 requestDTO.setProviderName(remote.providerName());
                 requestDTO.setServiceGroup(remote.group());
-                // 使用SPI机制加载配置文件中指定的处理链做前置处理
-                List<String> preProcessors = nettyRpcProperties.getConsumerPreProcessors();
-                if (null != preProcessors && !preProcessors.isEmpty()) {
-                    List<ConsumerPreProcessor> preProcessorList = SPIUtil.getObjects(preProcessors,
-                            ConsumerPreProcessor.class);
-                    try {
-                        for (ConsumerPreProcessor consumerPreProcessor : preProcessorList) {
-                            consumerPreProcessor.doPreProcess(requestDTO);
-                        }
-                    } catch (Exception e) {
-                        logger.error("do pre processor exception:", e);
-                        recordMetric(startTime, providerName, "", field.getType().getName(), group,
-                                method.getName(), CommonConstants.FAIL);
-                        throw e;
+                // 进行前置处理
+                List<ConsumerPreProcessor> preProcessorList = ConsumerProcessorCache
+                        .getConsumerPreProcessors(nettyRpcProperties.getConsumerPreProcessors());
+                try {
+                    for (ConsumerPreProcessor consumerPreProcessor : preProcessorList) {
+                        consumerPreProcessor.doPreProcess(requestDTO);
                     }
+                } catch (Exception e) {
+                    logger.error("do pre processor exception:", e);
+                    recordMetric(startTime, providerName, "", field.getType().getName(), group,
+                            method.getName(), CommonConstants.FAIL);
+                    throw e;
                 }
                 // 发送请求
                 TransferDTO responseDTO = nettyClient.send(requestDTO);
-                // 使用SPI机制加载配置文件中指定的处理链做后置处理
-                List<String> postProcessors = nettyRpcProperties.getConsumerPostProcessors();
-                if (null != postProcessors && !postProcessors.isEmpty()) {
-                    List<com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor> postProcessorList =
-                            SPIUtil.getObjects(postProcessors,
-                                    com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor.class);
-                    try {
-                        for (com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor consumerPostProcessor
-                                : postProcessorList) {
-                            consumerPostProcessor.doPostProcess(responseDTO);
-                        }
-                    } catch (Exception e) {
-                        logger.error("do post processor exception:", e);
-                        recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
-                                field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
-                                CommonConstants.FAIL);
-                        throw e;
+                // 进行后置处理
+                List<com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor> postProcessorList =
+                        ConsumerProcessorCache.getConsumerPostProcessors(nettyRpcProperties.getConsumerPostProcessors());
+                try {
+                    for (com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor consumerPostProcessor
+                            : postProcessorList) {
+                        consumerPostProcessor.doPostProcess(responseDTO);
                     }
+                } catch (Exception e) {
+                    logger.error("do post processor exception:", e);
+                    recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
+                            field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
+                            CommonConstants.FAIL);
+                    throw e;
                 }
                 if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
                     logger.error("call remote service error:{}", responseDTO.getResponseCode());
