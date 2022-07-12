@@ -54,11 +54,18 @@ public class ProviderAutoConfiguration implements AsyncConfigurer {
         return new NettyServerHandler();
     }
 
+    @Bean
+    @ConditionalOnMissingBean(ThreadPoolMetric.class)
+    public ThreadPoolMetric initThreadPoolMetric() {
+        return new ThreadPoolMetric();
+    }
+
     /**
      * 初始化提供者处理线程池
      * @return
      */
     @Override
+    @Bean("provider-process")
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(null == nettyRpcProperties.getProviderCorePoolSize()

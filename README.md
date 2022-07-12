@@ -229,5 +229,13 @@ management.endpoints.web.exposure.include=prometheus
 |heartbeat_total|心跳次数|Counter|remote_address(远程服务地址),type(success或者fail)|
 |receive_remote_call_total|接收远程调用次数|Counter|client_address(客户端地址),interface_name(远程调用接口名),impl(接口实现类),group(接口实现类group),method(方法名),type(success或者fail)|
 |process_remote_call_time_consume_range|处理远程调用耗时分布|Histogram|client_address(客户端地址),interface_name(远程调用接口名),impl(接口实现类),group(接口实现类group),method(方法名)|
+|provider_process_executor_active_threads|提供者处理线程池活跃线程数|Gauge|provider_name(提供者名称)|
+|provider_process_executor_pool_size|提供者处理线程池当前线程数|Gauge|provider_name(提供者名称)|
+|provider_process_executor_core_pool_size|提供者处理线程池核心线程数|Gauge|provider_name(提供者名称)|
+|provider_process_executor_max_pool_size|提供者处理线程池最大线程数|Gauge|provider_name(提供者名称)|
+|provider_process_executor_task_count|提供者处理线程池任务队列堆积任务个数|Gauge|provider_name(提供者名称)|
+|provider_process_executor_queue_remaining_capacity|提供者处理线程池任务队列剩余容量|Gauge|provider_name(提供者名称)|
+|provider_process_executor_completed_task_count|提供者处理线程池已完成任务数量|Gauge|provider_name(提供者名称)|
+|provider_process_executor_keep_alive_seconds|提供者处理线程池空闲线程保留时长（秒）|Gauge|provider_name(提供者名称)|
 ## 2. 心跳机制
 netty-rpc框架设计了心跳检测机制，Consumer定时每30秒向Provider发送心跳来检测netty长链接是否可用，若连续5次心跳失败，则将远程服务实例标记为不健康状态，不再向该实例发送请求，待下次心跳成功后，实例会重新恢复健康状态。
