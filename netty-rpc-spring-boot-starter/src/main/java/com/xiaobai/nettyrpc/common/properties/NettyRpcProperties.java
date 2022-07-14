@@ -67,6 +67,14 @@ public class NettyRpcProperties {
      */
     private List<String> consumerPostProcessors;
     /**
+     * 消费者前置处理器入参列表
+     */
+    private String consumerPreProcessorsParams;
+    /**
+     * 消费者后置处理器入参列表
+     */
+    private String consumerPostProcessorsParams;
+    /**
      * 提供者前置处理器全限定类名列表
      */
     private List<String> providerPreProcessors;
@@ -74,4 +82,12 @@ public class NettyRpcProperties {
      * 提供者后置处理器全限定类名列表
      */
     private List<String> providerPostProcessors;
+    /**
+     * 提供者前置处理器入参列表
+     */
+    private String providerPreProcessorsParams;
+    /**
+     * 提供者后置处理器入参列表
+     */
+    private String providerPostProcessorsParams;
 }

@@ -1,5 +1,7 @@
 package com.xiaobai.nettyrpc.consumer.config;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.entity.Collector;
 import com.xiaobai.nettyrpc.common.enums.MetricsEnum;
@@ -157,11 +159,19 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 requestDTO.setProviderName(remote.providerName());
                 requestDTO.setServiceGroup(remote.group());
                 // 进行前置处理
+                String consumerPreProcessorsParams = nettyRpcProperties.getConsumerPreProcessorsParams();
+                JSONObject preProcessorsParams = new JSONObject();
+                if (!StringUtils.isBlank(consumerPreProcessorsParams)) {
+                    preProcessorsParams = JSON.parseObject(consumerPreProcessorsParams);
+                }
                 List<ConsumerPreProcessor> preProcessorList = ConsumerProcessorCache
                         .getConsumerPreProcessors(nettyRpcProperties.getConsumerPreProcessors());
                 try {
+                    int i = 1;
                     for (ConsumerPreProcessor consumerPreProcessor : preProcessorList) {
-                        consumerPreProcessor.doPreProcess(requestDTO);
+                        consumerPreProcessor.doPreProcess(requestDTO,
+                                preProcessorsParams.getJSONObject(String.valueOf(i)));
+                        i++;
                     }
                 } catch (Exception e) {
                     logger.error("do pre processor exception:", e);
@@ -172,12 +182,20 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                 // 发送请求
                 TransferDTO responseDTO = nettyClient.send(requestDTO);
                 // 进行后置处理
+                String consumerPostProcessorsParams = nettyRpcProperties.getConsumerPostProcessorsParams();
+                JSONObject postProcessorsParams = new JSONObject();
+                if (!StringUtils.isBlank(consumerPostProcessorsParams)) {
+                    postProcessorsParams = JSON.parseObject(consumerPostProcessorsParams);
+                }
                 List<com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor> postProcessorList =
                         ConsumerProcessorCache.getConsumerPostProcessors(nettyRpcProperties.getConsumerPostProcessors());
                 try {
+                    int i = 1;
                     for (com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor consumerPostProcessor
                             : postProcessorList) {
-                        consumerPostProcessor.doPostProcess(responseDTO);
+                        consumerPostProcessor.doPostProcess(responseDTO,
+                                postProcessorsParams.getJSONObject(String.valueOf(i)));
+                        i++;
                     }
                 } catch (Exception e) {
                     logger.error("do post processor exception:", e);

@@ -1,5 +1,6 @@
 package com.xiaobai.nettyrpc.provider.processor;
 
+import com.alibaba.fastjson.JSONObject;
 import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 
 /**
@@ -12,7 +13,8 @@ public interface ProviderPostProcessor {
     /**
      * 后置处理
      * @param responseDTO 返回DTO
+     * @param params 参数
      * @throws Exception 异常
      */
-    void doPostProcess(TransferDTO responseDTO) throws Exception;
+    void doPostProcess(TransferDTO responseDTO, JSONObject params) throws Exception;
 }

@@ -119,27 +119,35 @@ netty-rpc框架提供了Consumer远程调用前置处理和后置处理机制，
 /**
  * 前置处理
  * @param requestDTO 请求DTO
+ * @param params 参数
  * @throws Exception 异常
  */
-void doPreProcess(TransferDTO requestDTO) throws Exception;
+void doPreProcess(TransferDTO requestDTO, JSONObject params) throws Exception;
 ```
 2.编写自定义Consumer后置处理器，继承com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor接口，实现doPostProcess方法，该方法描述如下：
 ```java
 /**
  * 后置处理
  * @param responseDTO 返回DTO
+ * @param params 参数
  * @throws Exception 异常
  */
-void doPostProcess(TransferDTO responseDTO) throws Exception;
+void doPostProcess(TransferDTO responseDTO, JSONObject params) throws Exception;
 ```
 3.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.consumer.processor.ConsumerPreProcessor文件，文件内容为自定义Consumer前置处理器全限定类名。  
 4.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.consumer.processor.ConsumerPostProcessor文件，文件内容为自定义Consumer后置处理器全限定类名。  
-5.在application.properties配置文件中指定Consumer前置处理链和后置处理链：
+5.在application.properties配置文件中指定Consumer前置处理链和后置处理链以及对应参数：
 ```properties
 #Consumer前置处理链（前置处理器全限定类名），多个前置处理器逗号分隔，按先后顺序执行
 netty-rpc.consumer-pre-processors=xxx,xxx
+#Consumer前置处理器参数，非必须，格式为JSON字符串，若有自定义前置处理器需要传参则可以
+#使用该参数传递，具体格式为：{"index":{xxx}}，其中index为处理器顺序，例如第二个处理器
+#需要传参key=value:{"2":{"key":"value"}}
+netty-rpc.consumer-pre-processors-params=xxx
 #Consumer后置处理链（后置处理器全限定类名），多个后置处理器逗号分隔，按先后顺序执行
 netty-rpc.consumer-post-processors=xxx,xxx
+#Consumer后置处理器参数，非必须，格式同前置处理器
+netty-rpc.consumer-post-processors-params=xxx
 ```
 ## 1.2 Provider端
 ### 1.2.1 基础配置
@@ -179,18 +187,20 @@ netty-rpc框架提供了Provider远程调用前置处理和后置处理机制，
 /**
  * 前置处理
  * @param requestDTO 请求DTO
+ * @param params 参数
  * @throws Exception 异常
  */
-void doPreProcess(TransferDTO requestDTO) throws Exception;
+void doPreProcess(TransferDTO requestDTO, JSONObject params) throws Exception;
 ```
 2.编写自定义Provider后置处理器，继承com.xiaobai.nettyrpc.provider.processor.ProviderPostProcessor接口，实现doPostProcess方法，该方法描述如下：
 ```java
 /**
  * 后置处理
  * @param responseDTO 返回DTO
+ * @param params 参数
  * @throws Exception 异常
  */
-void doPostProcess(TransferDTO responseDTO) throws Exception;
+void doPostProcess(TransferDTO responseDTO, JSONObject params) throws Exception;
 ```
 3.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.provider.processor.ProviderPreProcessor文件，文件内容为自定义Provider前置处理器全限定类名。  
 4.在resources目录下新建META-INF/services/com.xiaobai.nettyrpc.consumer.processor.ProviderPostProcessor文件，文件内容为自定义Provider后置处理器全限定类名。  
@@ -198,8 +208,12 @@ void doPostProcess(TransferDTO responseDTO) throws Exception;
 ```properties
 #Provider前置处理链（前置处理器全限定类名），多个前置处理器逗号分隔，按先后顺序执行
 netty-rpc.provider-pre-processors=xxx,xxx
+#Provider前置处理器参数，非必须，格式如Consumer处理器参数
+netty-rpc.provider-pre-processors-params=xxx
 #Provider后置处理链（后置处理器全限定类名），多个后置处理器逗号分隔，按先后顺序执行
 netty-rpc.provider-post-processors=xxx,xxx
+#Provider后置处理器参数，非必须，格式如Consumer处理器参数
+netty-rpc.provider-post-processors-params=xxx
 ```
 ### 1.2.5 指定Provider处理线程池参数
 可以在application.properties配置文件中指定Provider处理线程池参数：

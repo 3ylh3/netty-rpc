@@ -1,10 +1,11 @@
 package com.xiaobai.nettyrpc.provider.config;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.entity.Collector;
 import com.xiaobai.nettyrpc.common.enums.MetricsEnum;
 import com.xiaobai.nettyrpc.common.exceptions.RemoteCallException;
-import com.xiaobai.nettyrpc.common.utils.SPIUtil;
 import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 import com.xiaobai.nettyrpc.common.utils.TimeUtil;
 import com.xiaobai.nettyrpc.provider.processor.ProviderPreProcessor;
@@ -34,7 +35,8 @@ public class AsyncProcessor {
 
     @Async
     public void process(ChannelHandlerContext ctx, Object msg, List<String> providerPreProcessors,
-                        List<String> providerPostProcessors) {
+                        String providerPreProcessorsParams, List<String> providerPostProcessors,
+                        String providerPostProcessorsParams) {
         TransferDTO requestDTO = (TransferDTO) msg;
         TransferDTO responseDTO = new TransferDTO();
         responseDTO.copyRequestValue(requestDTO);
@@ -45,11 +47,18 @@ public class AsyncProcessor {
             } else {
                 long startTime = TimeUtil.currentTimeMillis();
                 // 执行前置处理
+                JSONObject preProcessorsParams = new JSONObject();
+                if (!StringUtils.isBlank(providerPreProcessorsParams)) {
+                    preProcessorsParams = JSON.parseObject(providerPreProcessorsParams);
+                }
                 List<ProviderPreProcessor> preProcessorList = ProviderProcessorCache
                         .getPreProcessors(providerPreProcessors);
                 try {
+                    int i = 1;
                     for (ProviderPreProcessor providerPreProcessor : preProcessorList) {
-                        providerPreProcessor.doPreProcess(requestDTO);
+                        providerPreProcessor.doPreProcess(requestDTO,
+                                preProcessorsParams.getJSONObject(String.valueOf(i)));
+                        i++;
                     }
                 } catch (Exception e) {
                     logger.error("do pre processor exception:", e);
@@ -85,12 +94,19 @@ public class AsyncProcessor {
                     responseDTO.setServiceGroup(providerService.getGroup());
                     responseDTO.setResult(result);
                     // 执行后置处理
+                    JSONObject postProcessorsParams = new JSONObject();
+                    if (!StringUtils.isBlank(providerPostProcessorsParams)) {
+                        postProcessorsParams = JSON.parseObject(providerPostProcessorsParams);
+                    }
                     List<com.xiaobai.nettyrpc.provider.processor.ProviderPostProcessor> postProcessorList =
                             ProviderProcessorCache.getPostProcessors(providerPostProcessors);
                     try {
+                        int i = 1;
                         for (com.xiaobai.nettyrpc.provider.processor.ProviderPostProcessor providerPostProcessor
                                 : postProcessorList) {
-                            providerPostProcessor.doPostProcess(responseDTO);
+                            providerPostProcessor.doPostProcess(responseDTO,
+                                    postProcessorsParams.getJSONObject(String.valueOf(i)));
+                            i++;
                         }
                     } catch (Exception e) {
                         logger.error("do post processor exception:", e);

@@ -30,7 +30,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         // 线程池异步处理
         asyncProcessor.process(ctx, msg, nettyRpcProperties.getProviderPreProcessors(),
-                nettyRpcProperties.getProviderPostProcessors());
+                nettyRpcProperties.getProviderPreProcessorsParams(), nettyRpcProperties.getProviderPostProcessors(),
+                nettyRpcProperties.getProviderPostProcessorsParams());
     }
 
     @Override
