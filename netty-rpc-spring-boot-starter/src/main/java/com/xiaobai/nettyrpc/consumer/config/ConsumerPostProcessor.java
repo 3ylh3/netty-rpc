@@ -205,7 +205,7 @@ public class ConsumerPostProcessor implements BeanPostProcessor {
                     throw e;
                 }
                 if (CommonConstants.ERROR_CODE == responseDTO.getResponseCode()) {
-                    logger.error("call remote service error:{}", responseDTO.getResponseCode());
+                    logger.error("call remote service error:{}", responseDTO.getResponseMessage());
                     recordMetric(startTime, responseDTO.getProviderName(), responseDTO.getRemoteAddress(),
                             field.getType().getName(), responseDTO.getServiceGroup(), method.getName(),
                             CommonConstants.FAIL);

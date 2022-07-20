@@ -39,6 +39,9 @@ public class CommonConstants {
     public static final String SUMMARY = "Summary";
     public static final String FAIL = "fail";
     public static final String SUCCESS = "success";
+    public static final String RATE_LIMIT = "rate limit";
     public static final String TIME_TICK_THREAD = "time-tick-thread";
     public static final String PROMETHEUS = "prometheus";
+    public static final String RATE_LIMIT_CAPACITY = "rate_limit_capacity";
+    public static final String RATE_LIMIT_RATE = "rate_limit_rate";
 }

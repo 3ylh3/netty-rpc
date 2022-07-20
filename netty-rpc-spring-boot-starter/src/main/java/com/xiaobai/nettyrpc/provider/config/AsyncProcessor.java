@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.xiaobai.nettyrpc.common.constants.CommonConstants;
 import com.xiaobai.nettyrpc.common.entity.Collector;
 import com.xiaobai.nettyrpc.common.enums.MetricsEnum;
+import com.xiaobai.nettyrpc.common.exceptions.RateLimitException;
 import com.xiaobai.nettyrpc.common.exceptions.RemoteCallException;
 import com.xiaobai.nettyrpc.common.dto.TransferDTO;
 import com.xiaobai.nettyrpc.common.utils.TimeUtil;
@@ -46,30 +47,6 @@ public class AsyncProcessor {
                 responseDTO.setResponseCode(CommonConstants.SUCCESS_CODE);
             } else {
                 long startTime = TimeUtil.currentTimeMillis();
-                // 执行前置处理
-                JSONObject preProcessorsParams = new JSONObject();
-                if (!StringUtils.isBlank(providerPreProcessorsParams)) {
-                    preProcessorsParams = JSON.parseObject(providerPreProcessorsParams);
-                }
-                List<ProviderPreProcessor> preProcessorList = ProviderProcessorCache
-                        .getPreProcessors(providerPreProcessors);
-                try {
-                    int i = 1;
-                    for (ProviderPreProcessor providerPreProcessor : preProcessorList) {
-                        providerPreProcessor.doPreProcess(requestDTO,
-                                preProcessorsParams.getJSONObject(String.valueOf(i)));
-                        i++;
-                    }
-                } catch (Exception e) {
-                    logger.error("do pre processor exception:", e);
-                    responseDTO.setResponseCode(CommonConstants.ERROR_CODE);
-                    responseDTO.setResponseMessage(e.getMessage());
-                    // 记录失败次数以及耗时
-                    recordMetric(startTime, ctx.channel().remoteAddress().toString(),
-                            responseDTO.getInterfaceName(), "", responseDTO.getServiceGroup(),
-                            responseDTO.getMethodName(), CommonConstants.FAIL);
-                    return;
-                }
                 try {
                     // 反射获取调用接口的实现类
                     String interfaceName = requestDTO.getInterfaceName();
@@ -85,13 +62,42 @@ public class AsyncProcessor {
                     if (null == providerService) {
                         throw new RemoteCallException("no impl find,interface:" + interfaceName);
                     }
+                    responseDTO.setProviderName(providerService.getProviderName());
+                    responseDTO.setServiceGroup(providerService.getGroup());
+                    // 执行前置处理
+                    JSONObject preProcessorsParams = new JSONObject();
+                    if (!StringUtils.isBlank(providerPreProcessorsParams)) {
+                        preProcessorsParams = JSON.parseObject(providerPreProcessorsParams);
+                    }
+                    List<ProviderPreProcessor> preProcessorList = ProviderProcessorCache
+                            .getPreProcessors(providerPreProcessors);
+                    try {
+                        int i = 1;
+                        for (ProviderPreProcessor providerPreProcessor : preProcessorList) {
+                            providerPreProcessor.doPreProcess(requestDTO,
+                                    preProcessorsParams.getJSONObject(String.valueOf(i)));
+                            i++;
+                        }
+                    } catch (Exception e) {
+                        logger.error("do pre processor exception:", e);
+                        responseDTO.setResponseCode(CommonConstants.ERROR_CODE);
+                        responseDTO.setResponseMessage(e.getMessage());
+                        String type = CommonConstants.FAIL;
+                        if (e instanceof RateLimitException) {
+                            type = CommonConstants.RATE_LIMIT;
+                        }
+                        // 记录失败次数以及耗时
+                        recordMetric(startTime, ctx.channel().remoteAddress().toString(),
+                                responseDTO.getInterfaceName(), providerService.getImplName(),
+                                providerService.getGroup(), responseDTO.getMethodName(),
+                                type);
+                        return;
+                    }
                     Class<?> clazz = Class.forName(providerService.getImplName());
                     Method method = clazz.getDeclaredMethod(methodName, parameterTypes);
                     Object result = method.invoke(clazz.newInstance(), params);
                     responseDTO.setResponseCode(CommonConstants.SUCCESS_CODE);
                     responseDTO.setResponseMessage(CommonConstants.SUCCESS_MESSAGE);
-                    responseDTO.setProviderName(providerService.getProviderName());
-                    responseDTO.setServiceGroup(providerService.getGroup());
                     responseDTO.setResult(result);
                     // 执行后置处理
                     JSONObject postProcessorsParams = new JSONObject();

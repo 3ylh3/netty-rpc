@@ -227,6 +227,14 @@ netty-rpc.provider-queue-capacity=xx
 #空闲线程存活时长，默认10s
 netty-rpc.provider-keep-alive-seconds=xx
 ```
+### 1.2.6 限流
+netty-rpc框架在Provider端提供限流能力(基于前置处理器，使用令牌桶限流算法，默认桶容量为500，令牌生成速率为200个/秒)，默认关闭，可在application.properties中配置开启：
+```properties
+##限流能力基于前置处理器，配置相关实现类即可
+netty-rpc.provider-pre-processors=com.xiaobai.nettyrpc.provider.processor.impl.RateLimitPreProcessor
+##自定义限流参数，非必须，rate_limit_capacity为桶容量，rate_limit_rate为令牌生成速率
+netty-rpc.provider-pre-processors-params={"1":{"rate_limit_capacity":xxx,"rate_limit_rate":xxx}}
+```
 ## 1.3 Metrics指标
 netty-rpc框架提供prometheus exporter暴露metrics指标能力，默认关闭，如需开启则可在application.properties添加以下配置：  
 ```properties
@@ -242,7 +250,7 @@ management.endpoints.web.exposure.include=prometheus
 |remote_call_total|远程调用次数|Counter|provider_name(提供者名称),remote_address(远程服务地址),interface_name(远程调用接口名),group(接口实现类group),method(方法名),type(success或者fail)|
 |remote_call_time_consume_range|远程调用耗时分布|Histogram|provider_name(提供者名称),remote_address(远程服务地址),interface_name(远程调用接口名),group(接口实现类group),method(方法名)|
 |heartbeat_total|心跳次数|Counter|remote_address(远程服务地址),type(success或者fail)|
-|receive_remote_call_total|接收远程调用次数|Counter|client_address(客户端地址),interface_name(远程调用接口名),impl(接口实现类),group(接口实现类group),method(方法名),type(success或者fail)|
+|receive_remote_call_total|接收远程调用次数|Counter|client_address(客户端地址),interface_name(远程调用接口名),impl(接口实现类),group(接口实现类group),method(方法名),type(success、fail或者rate limit)|
 |process_remote_call_time_consume_range|处理远程调用耗时分布|Histogram|client_address(客户端地址),interface_name(远程调用接口名),impl(接口实现类),group(接口实现类group),method(方法名)|
 |provider_process_executor_active_threads|提供者处理线程池活跃线程数|Gauge|provider_name(提供者名称)|
 |provider_process_executor_pool_size|提供者处理线程池当前线程数|Gauge|provider_name(提供者名称)|
