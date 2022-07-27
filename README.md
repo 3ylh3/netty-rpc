@@ -235,6 +235,12 @@ netty-rpc.provider-pre-processors=com.xiaobai.nettyrpc.provider.processor.impl.R
 ##自定义限流参数，非必须，rate_limit_capacity为桶容量，rate_limit_rate为令牌生成速率
 netty-rpc.provider-pre-processors-params={"1":{"rate_limit_capacity":xxx,"rate_limit_rate":xxx}}
 ```
+### 1.2.7 数据压缩
+netty-rpc框架提供传输数据压缩能力，使用Snappy算法，默认关闭，可在application.properties文件中配置开启：
+```properties
+netty-rpc.compression=true
+```
+需要注意，若Consumer端开启了数据压缩，则Provider端也需要开启，反之同理。
 ## 1.3 Metrics指标
 netty-rpc框架提供prometheus exporter暴露metrics指标能力，默认关闭，如需开启则可在application.properties添加以下配置：  
 ```properties

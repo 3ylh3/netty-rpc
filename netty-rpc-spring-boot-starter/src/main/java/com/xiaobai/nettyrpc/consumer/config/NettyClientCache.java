@@ -70,7 +70,7 @@ public class NettyClientCache {
                     : nettyRpcProperties.getTimeout();
             // 初始化client
             initNettyClient(list, timeout, nettyRpcProperties.getEncodeClassName(),
-                    nettyRpcProperties.getDecodeClassName());
+                    nettyRpcProperties.getDecodeClassName(), nettyRpcProperties.getCompression());
         }
         logger.info("add netty client success");
     }
@@ -141,9 +141,10 @@ public class NettyClientCache {
      * @param timeout 超时时间
      * @param encodeClassName 自定义编码类全限定类名
      * @param decodeClassName 自定义解码类全限定类名
+     * @param isCompression 是否开启数据压缩
      */
     private static void initNettyClient(List<RemoteService> list, Integer timeout, String encodeClassName,
-                                        String decodeClassName) throws Exception {
+                                        String decodeClassName, Boolean isCompression) throws Exception {
         for (RemoteService remoteService : list) {
             String key = remoteService.getIp() + CommonConstants.ADDRESS_DELIMITER + remoteService.getPort();
             // 判断缓存中是否已经有对应的channel
@@ -169,11 +170,17 @@ public class NettyClientCache {
                                 if (null == decoder) {
                                     decoder = new HessianDecoder();
                                 }
+                                if (null != isCompression && isCompression) {
+                                    decoder.setCompression(true);
+                                }
                                 socketChannel.pipeline().addLast(decoder);
                                 socketChannel.pipeline().addLast(new ClientHandler());
                                 AbstractEncoder encoder = SPIUtil.getObject(encodeClassName, AbstractEncoder.class);
                                 if (null == encoder) {
                                     encoder = new HessianEncoder();
+                                }
+                                if (null != isCompression && isCompression) {
+                                    encoder.setCompression(true);
                                 }
                                 socketChannel.pipeline().addLast(encoder);
                             }
@@ -230,7 +237,7 @@ public class NettyClientCache {
                         : nettyRpcProperties.getTimeout();
                 try {
                     initNettyClient(newRemoteServices, timeout, nettyRpcProperties.getEncodeClassName(),
-                            nettyRpcProperties.getDecodeClassName());
+                            nettyRpcProperties.getDecodeClassName(), nettyRpcProperties.getCompression());
                 } catch (Exception e) {
                     logger.error("update cache exception,provider name:{}", providerName, e);
                 }

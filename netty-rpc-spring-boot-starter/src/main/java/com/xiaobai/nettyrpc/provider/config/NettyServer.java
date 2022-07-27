@@ -76,12 +76,18 @@ public class NettyServer implements ApplicationRunner {
                             if (null == decoder) {
                                 decoder = new HessianDecoder();
                             }
+                            if (null != nettyRpcProperties.getCompression() && nettyRpcProperties.getCompression()) {
+                                decoder.setCompression(true);
+                            }
                             socketChannel.pipeline().addLast(decoder);
                             socketChannel.pipeline().addLast(nettyServerHandler);
                             AbstractEncoder encoder = SPIUtil.getObject(nettyRpcProperties.getEncodeClassName(),
                                     AbstractEncoder.class);
                             if (null == encoder) {
                                 encoder = new HessianEncoder();
+                            }
+                            if (null != nettyRpcProperties.getCompression() && nettyRpcProperties.getCompression()) {
+                                encoder.setCompression(true);
                             }
                             socketChannel.pipeline().addLast(encoder);
                         }

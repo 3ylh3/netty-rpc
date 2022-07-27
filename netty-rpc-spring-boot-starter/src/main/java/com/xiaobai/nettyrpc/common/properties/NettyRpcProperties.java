@@ -31,6 +31,10 @@ public class NettyRpcProperties {
      */
     private Integer timeout;
     /**
+     * 是否开启数据压缩，默认不开启
+     */
+    private Boolean compression;
+    /**
      * 自定义编码类全限定类名
      */
     private String encodeClassName;
