@@ -243,7 +243,7 @@ management.server.port=1123
 #开启prometheus exporter
 management.endpoints.web.exposure.include=prometheus
 ```
-开启后访问${服务ip}:{exporter暴露端口}/actuator/prometheus即可查看相关指标。
+开启后访问${服务ip}:{exporter暴露端口}/actuator/prometheus即可查看相关指标。  
 注：prometheus介绍详见：[prometheus官网](https://prometheus.io/)  
 暴露的具体metrics以及描述如下：  
 |metric|描述|类型|labels|
